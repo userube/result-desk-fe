@@ -42,7 +42,12 @@ export function DashboardPreview() {
                     <h4 className="text-xl font-bold">Hi Admin, let’s get school work moving.</h4>
                     <p className="mt-1 text-sm text-slate-500">greenfield.ewune.app</p>
                   </div>
-                  <Button size="sm"><UserPlus size={15} /> Invite teacher</Button>
+                  <Button
+                    size="sm"
+                    className="h-8 rounded-lg border border-brand/10 bg-[#0d5f54] px-3 text-xs shadow-[0_8px_18px_rgba(16,107,95,0.18)] hover:bg-brand-dark"
+                  >
+                    <UserPlus size={14} /> Invite teacher
+                  </Button>
                 </div>
                 <div className="mt-5 grid gap-3 md:grid-cols-3">
                   {[
@@ -95,7 +100,13 @@ export function DashboardPreview() {
                     <h4 className="font-bold">ResultDesk queue</h4>
                     <p className="mt-1 text-sm text-slate-500">Scores are approved before final PDFs are generated.</p>
                   </div>
-                  <Button variant="outline" size="sm"><FileText size={15} /> Generate PDFs</Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 rounded-lg border-slate-200 bg-[#f8fbf9] px-3 text-xs text-brand-dark shadow-sm hover:border-brand/25 hover:bg-brand-soft"
+                  >
+                    <FileText size={14} /> Generate PDFs
+                  </Button>
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <div className="rounded-lg border border-slate-100 p-4">
