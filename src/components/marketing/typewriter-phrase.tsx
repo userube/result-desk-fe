@@ -33,9 +33,11 @@ export function TypewriterPhrase() {
   }, [deleting, phraseIndex, visibleLength]);
 
   return (
-    <span className="inline-grid h-[1.12em] w-[13.6ch] translate-y-[0.08em] grid-cols-[1fr_auto] items-center justify-center rounded-[0.38em] bg-[#d7f2ef] px-[0.18em] pb-[0.08em] text-brand-dark md:w-[14.2ch]">
-      <span className="block overflow-hidden whitespace-nowrap text-center leading-none">{phrases[phraseIndex].slice(0, visibleLength)}</span>
-      <span className="ml-[0.08em] h-[0.72em] w-[3px] animate-pulse rounded-full bg-brand-dark" aria-hidden="true" />
+    <span className="inline-flex h-[1.16em] w-[13.8ch] translate-y-[0.05em] items-center justify-center rounded-[0.38em] bg-[#d7f2ef] px-[0.2em] text-brand-dark md:w-[14.4ch]">
+      <span className="inline-flex h-[1em] items-center justify-center overflow-hidden whitespace-nowrap leading-none">
+        <span>{phrases[phraseIndex].slice(0, visibleLength)}</span>
+        <span className="ml-[0.06em] inline-block h-[0.76em] w-[3px] shrink-0 animate-pulse rounded-full bg-brand-dark align-middle" aria-hidden="true" />
+      </span>
     </span>
   );
 }
