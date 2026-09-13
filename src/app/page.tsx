@@ -117,6 +117,7 @@ export default function LandingPage() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild className="bg-[#171724] shadow-lg hover:bg-brand-dark"><Link href="/signup"><span className="size-2 rounded-full bg-[#e2dbb5]" /> Start free pilot <ArrowRight size={18} /></Link></Button>
             <Button asChild variant="outline"><Link href="/demo">View live demo</Link></Button>
+            <Button asChild variant="ghost"><a href="mailto:hello@pulchrilabs.com?subject=Book%20an%20Ewune%20demo">Book a demo</a></Button>
           </div>
 
           <div className="mt-16 w-full max-w-5xl px-2 md:mt-20">
@@ -235,7 +236,10 @@ export default function LandingPage() {
       <section className="px-4 pb-16 text-center">
         <div className="mx-auto max-w-4xl rounded-[28px] border border-[#dfe3de] bg-white p-8 shadow-soft">
           <h2 className="text-3xl font-bold md:text-5xl">Give teachers a simple place to submit. Give management a clear place to approve.</h2>
-          <Button asChild className="mt-6"><Link href="/signup">Start free pilot <ArrowRight size={18} /></Link></Button>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Button asChild><Link href="/signup">Start free pilot <ArrowRight size={18} /></Link></Button>
+            <Button asChild variant="outline"><a href="mailto:hello@pulchrilabs.com?subject=Book%20an%20Ewune%20demo">Book a demo</a></Button>
+          </div>
         </div>
       </section>
 
@@ -263,6 +267,7 @@ export default function LandingPage() {
             <p className="font-semibold text-brand-dark">Portal</p>
             <div className="mt-4 grid gap-3 text-sm text-slate-600">
               <Link href="/demo">Live demo</Link>
+              <a href="mailto:hello@pulchrilabs.com?subject=Book%20an%20Ewune%20demo">Book a demo</a>
               <Link href="/login">Login</Link>
               <Link href="/signup">Start free pilot</Link>
             </div>
