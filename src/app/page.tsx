@@ -1,149 +1,218 @@
 import Link from "next/link";
-import { ArrowRight, Check, ClipboardList, FileCheck2, Layers3, School, ShieldCheck, type LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarDays,
+  Check,
+  ClipboardList,
+  FileCheck2,
+  Layers3,
+  School,
+  ShieldCheck,
+  Sparkles,
+  type LucideIcon
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardPreview } from "@/components/marketing/dashboard-preview";
 
-const problems = [
-  "Teachers submit scores through Excel, paper, or WhatsApp",
-  "Weekly reports are scattered",
-  "Result generation depends on one admin person",
-  "Holiday coaching records are handled separately",
-  "Management cannot easily see who has submitted",
-  "Corrections and approvals are hard to trace"
+const pressurePoints = [
+  "Scores arrive through WhatsApp, Excel, paper, and corridor reminders.",
+  "Weekly reports sit in different notebooks, chats, and inboxes.",
+  "Holiday coaching runs like a separate school with no clear record.",
+  "One admin person becomes the result factory for everyone.",
+  "Corrections happen late, after parents are already asking."
 ];
 
-const steps = [
-  "School signs up",
-  "School chooses subdomain",
-  "Admin creates term or holiday program",
-  "Admin invites teachers",
-  "Teachers submit reports and scores",
-  "Management reviews and approves",
-  "ResultDesk generates PDFs"
+const storySteps = [
+  ["Monday", "Admin opens First Term and Holiday Coaching programs."],
+  ["Tuesday", "Teachers submit reports from phone or laptop."],
+  ["Wednesday", "Missing scores and pending reports are visible."],
+  ["Thursday", "Management reviews, approves, and comments."],
+  ["Friday", "ResultDesk generates clean PDFs with an audit trail."]
 ];
 
-const programs = ["First, second, and third term", "Holiday coaching", "Summer school", "Common entrance prep", "JAMB/WAEC coaching", "After-school lessons"];
+const programCards = [
+  { title: "Normal terms", detail: "First, second, and third term reporting and results.", icon: CalendarDays },
+  { title: "Holiday coaching", detail: "Keep summer lessons, weekend classes, and prep groups organized.", icon: Layers3 },
+  { title: "Exam preparation", detail: "Common entrance, WAEC, JAMB, and custom revision programs.", icon: FileCheck2 }
+];
 
 const modules: Array<{ title: string; copy: string; Icon: LucideIcon }> = [
-  { title: "Programs", copy: "Run terms, holiday coaching, summer school, exam prep, weekend classes, and custom programs in one place.", Icon: Layers3 },
-  { title: "Weekly Reports", copy: "Teachers submit topics taught, attendance, student concerns, tests, notes, and needs from management.", Icon: ClipboardList },
-  { title: "ResultDesk", copy: "Handle CA, exam scores, custom components, comments, approvals, branded PDFs, and class batch results.", Icon: FileCheck2 },
-  { title: "School Portal", copy: "Each school gets a public page, school subdomain, admission inquiry form, and future custom domain support.", Icon: School }
+  { title: "Programs", copy: "Create terms, coaching groups, exam prep, after-school lessons, and custom programs.", Icon: Layers3 },
+  { title: "Weekly Reports", copy: "Teachers submit topics, attendance, concerns, tests, notes, and requests from one simple form.", Icon: ClipboardList },
+  { title: "ResultDesk", copy: "Collect scores, route approvals, generate branded PDFs, and keep result actions traceable.", Icon: FileCheck2 },
+  { title: "School Portal", copy: "Give each school a public page, admission inquiry form, subdomain, and future custom domain path.", Icon: School }
 ];
 
-const before = ["Excel files everywhere", "WhatsApp score submissions", "One person generates results", "Weekly reports scattered", "Coaching records separate", "No clear approval trail"];
-const after = ["Teachers submit from phone or laptop", "Management sees pending work", "Programs are organized", "Results are approved before publishing", "PDFs are generated cleanly", "Actions are tracked in audit logs"];
+const before = ["Excel files everywhere", "WhatsApp score submissions", "Weekly reports scattered", "Coaching records separate", "No clear approval trail"];
+const after = ["Teachers own submissions", "Management sees pending work", "Programs stay organized", "PDF results are approved first", "Actions are logged automatically"];
+
+const pricing = [
+  ["Pilot", "Free 14-day pilot", "One school, one program, limited teachers, sample result generation."],
+  ["Starter", "₦15k/month", "Dashboard, teacher invites, programs, classes, students, weekly reports, and tracking."],
+  ["ResultDesk Pack", "₦50k per term/program", "Score entry, approval workflow, branded PDFs, class batch PDFs, and result archive."],
+  ["Growth", "₦30k/month", "Multiple active programs, school portal, advanced reporting, more teachers, and priority support."],
+  ["Setup", "₦50k-₦150k one-time", "Teacher onboarding, result templates, grading scale, school setup, and training."],
+  ["Website add-on", "₦100k-₦200k one-time", "Public school website/page, admission inquiry form, and subdomain setup."]
+];
 
 export default function LandingPage() {
   return (
-    <main className="bg-[#f7fbfa] text-brand-text">
-      <nav className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link href="/" className="font-bold text-brand-dark">ClassPilot <span className="text-xs font-medium text-slate-500">by PulchriLabs</span></Link>
-          <div className="hidden items-center gap-6 text-sm md:flex">
-            {["Product", "Programs", "Pricing", "Demo"].map((item) => <a href={`#${item.toLowerCase()}`} key={item}>{item}</a>)}
+    <main className="bg-[#f3f4f1] text-brand-text">
+      <nav className="sticky top-0 z-30 border-b border-[#dfe3de] bg-[#f3f4f1]/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+          <Link href="/" className="flex items-center gap-2 font-bold text-brand-dark">
+            <span className="grid size-9 place-items-center rounded-md bg-brand-dark text-white">CP</span>
+            <span>ClassPilot</span>
+            <span className="hidden text-xs font-medium text-slate-500 sm:inline">by PulchriLabs</span>
+          </Link>
+          <div className="hidden items-center gap-7 text-sm md:flex">
+            {["Story", "Programs", "Modules", "Pricing"].map((item) => <a href={`#${item.toLowerCase()}`} key={item}>{item}</a>)}
             <Link href="/login">Login</Link>
             <Button asChild size="sm"><Link href="/signup">Start free pilot</Link></Button>
           </div>
         </div>
       </nav>
 
-      <section className="mx-auto grid max-w-6xl gap-10 px-4 pb-16 pt-12 lg:grid-cols-[0.9fr_1.1fr] lg:pt-20">
+      <section className="mx-auto max-w-7xl px-4 pb-16 pt-10">
+        <div className="rounded-[32px] border border-[#dfe3de] bg-[#fbfcfa] p-5 shadow-soft md:p-8">
+          <div className="grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
+            <div className="py-4 md:py-8">
+              <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#e2dbb5]/60 px-3 py-1 text-sm font-semibold text-brand-dark">
+                <Sparkles size={15} /> Built for growing Nigerian schools
+              </p>
+              <h1 className="max-w-4xl text-4xl font-bold leading-tight tracking-normal md:text-6xl">
+                Run school terms, holiday coaching, and results without chasing teachers.
+              </h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+                ClassPilot helps schools collect teacher reports, manage programs, track submissions, and publish ResultDesk PDFs from one calm operations portal.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Button asChild><Link href="/signup">Start free pilot <ArrowRight size={18} /></Link></Button>
+                <Button asChild variant="outline"><Link href="/demo">View live demo</Link></Button>
+              </div>
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                {["2 active programs", "7 pending submissions", "72% result completion"].map((item) => (
+                  <div className="rounded-md border border-[#dfe3de] bg-white p-4 text-sm font-semibold" key={item}>{item}</div>
+                ))}
+              </div>
+            </div>
+            <DashboardPreview />
+          </div>
+        </div>
+      </section>
+
+      <section id="story" className="mx-auto grid max-w-7xl gap-8 px-4 py-14 lg:grid-cols-[0.8fr_1.2fr]">
         <div>
-          <p className="mb-4 inline-flex rounded-full bg-brand-soft px-3 py-1 text-sm font-semibold text-brand">ClassPilot by PulchriLabs</p>
-          <h1 className="max-w-3xl text-4xl font-bold leading-tight tracking-normal md:text-6xl">Run school terms, holiday coaching, and results without chasing teachers.</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">ClassPilot helps growing schools collect teacher reports, manage programs, track submissions, and generate clean PDF results from one simple portal.</p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button asChild><Link href="/signup">Start free pilot <ArrowRight size={18} /></Link></Button>
-            <Button asChild variant="outline"><Link href="/demo">View live demo</Link></Button>
-          </div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-brand">The real school story</p>
+          <h2 className="mt-3 text-3xl font-bold md:text-5xl">School work should not be trapped with one person.</h2>
+          <p className="mt-5 leading-8 text-slate-600">
+            At the end of a week, teachers have taught lessons, given tests, handled concerns, and collected scores. But management still has to chase the evidence. ClassPilot turns that scattered work into a visible routine.
+          </p>
         </div>
-        <DashboardPreview />
-      </section>
-
-      <section id="product" className="bg-white py-14">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-2">
-          <div>
-            <h2 className="text-3xl font-bold">School work should not be trapped with one person.</h2>
-            <p className="mt-3 text-slate-600">ClassPilot gives management visibility while teachers own their class, report, score, and program submissions.</p>
-          </div>
-          <div className="grid gap-3">
-            {problems.map((problem) => <div className="flex items-center gap-3 rounded-md border border-slate-200 p-3" key={problem}><Check className="text-brand" size={18} /> {problem}</div>)}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-brand-dark py-14 text-white">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-3xl font-bold">How it works</h2>
-          <div className="mt-8 grid gap-3 md:grid-cols-7">
-            {steps.map((step, index) => <div className="rounded-md bg-white/10 p-4 text-sm" key={step}><span className="mb-3 block text-2xl font-bold">{index + 1}</span>{step}</div>)}
-          </div>
-        </div>
-      </section>
-
-      <section id="programs" className="mx-auto max-w-6xl px-4 py-14">
-        <h2 className="text-3xl font-bold">Manage more than normal school terms.</h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {programs.map((program) => <div className="rounded-lg border border-slate-200 bg-white p-5 font-semibold" key={program}>{program}</div>)}
-        </div>
-      </section>
-
-      <section className="bg-white py-14">
-        <div className="mx-auto grid max-w-6xl gap-4 px-4 md:grid-cols-4">
-          {modules.map(({ title, copy, Icon }) => (
-            <div className="rounded-lg border border-slate-200 bg-white p-5" key={title}>
-              <Icon className="mb-4 text-brand" size={26} />
-              <h3 className="font-semibold">{title}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{copy}</p>
+        <div className="grid gap-3">
+          {pressurePoints.map((point) => (
+            <div className="flex items-start gap-3 rounded-lg border border-[#dfe3de] bg-white p-4" key={point}>
+              <span className="mt-1 grid size-6 shrink-0 place-items-center rounded-full bg-[#e2dbb5] text-xs font-bold text-brand-dark">!</span>
+              <p className="text-sm leading-6 text-slate-700">{point}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-4 px-4 py-14 md:grid-cols-2">
-        <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="text-2xl font-bold">Before ClassPilot</h2>
-          <div className="mt-4 grid gap-3">{before.map((item) => <p className="rounded-md bg-slate-50 p-3 text-sm" key={item}>{item}</p>)}</div>
-        </div>
-        <div className="rounded-lg border border-brand/20 bg-brand-soft p-5">
-          <h2 className="text-2xl font-bold">After ClassPilot</h2>
-          <div className="mt-4 grid gap-3">{after.map((item) => <p className="rounded-md bg-white p-3 text-sm" key={item}>{item}</p>)}</div>
-        </div>
-      </section>
-
-      <section id="pricing" className="mx-auto max-w-6xl px-4 py-14">
-        <h2 className="text-3xl font-bold">Hybrid pricing for terms and programs</h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {[
-            ["Pilot", "Free 14-day pilot", "One school, one program, limited teachers, sample result generation."],
-            ["Starter", "₦15k/month", "School dashboard, teacher invites, programs, classes/students, weekly reports, and tracking."],
-            ["ResultDesk Pack", "₦50k per term/program", "Score entry, approval workflow, branded PDFs, class batch PDFs, and result archive."],
-            ["Growth", "₦30k/month", "More teachers/classes, multiple active programs, school portal, advanced reporting, priority support."],
-            ["Setup and customization", "₦50k-₦150k one-time", "School setup, teacher onboarding, templates, grading scale, and training."],
-            ["Website add-on", "₦100k-₦200k one-time", "Public school website/page, admission inquiry form, and subdomain setup."]
-          ].map(([name, price, copy]) => <div className="rounded-lg border border-slate-200 bg-white p-5" key={name}><p className="font-semibold">{name}</p><p className="mt-2 text-2xl font-bold text-brand-dark">{price}</p><p className="mt-3 text-sm leading-6 text-slate-600">{copy}</p></div>)}
+      <section className="bg-[#090a0b] py-16 text-white">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-wide text-[#e2dbb5]">A week with ClassPilot</p>
+            <h2 className="mt-3 text-3xl font-bold md:text-5xl">From chasing teachers to checking progress.</h2>
+          </div>
+          <div className="mt-8 grid gap-3 md:grid-cols-5">
+            {storySteps.map(([day, copy]) => (
+              <div className="rounded-lg border border-white/10 bg-white/5 p-5" key={day}>
+                <p className="text-sm font-semibold text-[#e2dbb5]">{day}</p>
+                <p className="mt-4 text-sm leading-6 text-white/80">{copy}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="bg-white py-14">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-2">
+      <section id="programs" className="mx-auto max-w-7xl px-4 py-16">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <ShieldCheck className="text-brand" size={32} />
-            <h2 className="mt-4 text-3xl font-bold">Tenant-safe by design</h2>
-            <p className="mt-3 text-slate-600">Every school-owned record carries a school ID. Program work, ResultDesk approvals, weekly reports, and domain settings are logged in the audit trail.</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-brand">Programs</p>
+            <h2 className="mt-3 text-3xl font-bold md:text-5xl">More than normal school terms.</h2>
           </div>
-          <div className="rounded-lg bg-brand-soft p-6">
-            <h3 className="font-semibold">FAQ</h3>
-            <p className="mt-3 text-sm text-slate-700">Can teachers use it on phones? Yes. Teacher reports and score entry are designed mobile-first.</p>
-            <p className="mt-3 text-sm text-slate-700">Can we track holiday coaching separately? Yes. Programs can be normal terms, coaching, exam prep, weekend classes, or custom.</p>
+          <p className="max-w-lg text-sm leading-6 text-slate-600">Use one structure for First Term, holiday coaching, summer school, common entrance prep, WAEC/JAMB classes, after-school lessons, and weekend groups.</p>
+        </div>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {programCards.map(({ title, detail, icon: Icon }) => (
+            <div className="rounded-xl border border-[#dfe3de] bg-white p-6" key={title}>
+              <Icon className="text-brand" size={28} />
+              <h3 className="mt-5 text-xl font-bold">{title}</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{detail}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="modules" className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-4">
+          <p className="text-sm font-semibold uppercase tracking-wide text-brand">One portal, four modules</p>
+          <h2 className="mt-3 max-w-3xl text-3xl font-bold md:text-5xl">Each module carries one part of the school operations story.</h2>
+          <div className="mt-8 grid gap-4 md:grid-cols-4">
+            {modules.map(({ title, copy, Icon }) => (
+              <div className="rounded-xl border border-[#dfe3de] bg-[#fbfcfa] p-5" key={title}>
+                <Icon className="text-brand" size={26} />
+                <h3 className="mt-5 font-bold">{title}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{copy}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="px-4 py-16 text-center">
-        <h2 className="text-3xl font-bold">Ready to organize reports, programs, and results?</h2>
-        <Button asChild className="mt-6"><Link href="/signup">Start free pilot</Link></Button>
+      <section className="mx-auto grid max-w-7xl gap-4 px-4 py-16 md:grid-cols-2">
+        <div className="rounded-2xl border border-[#dfe3de] bg-white p-6">
+          <h2 className="text-2xl font-bold">Before ClassPilot</h2>
+          <div className="mt-5 grid gap-3">{before.map((item) => <p className="rounded-md bg-slate-50 p-3 text-sm" key={item}>{item}</p>)}</div>
+        </div>
+        <div className="rounded-2xl border border-brand/20 bg-brand-soft p-6">
+          <h2 className="text-2xl font-bold">After ClassPilot</h2>
+          <div className="mt-5 grid gap-3">{after.map((item) => <p className="rounded-md bg-white p-3 text-sm" key={item}><Check className="mr-2 inline text-brand" size={16} />{item}</p>)}</div>
+        </div>
+      </section>
+
+      <section id="pricing" className="mx-auto max-w-7xl px-4 py-16">
+        <div className="rounded-[28px] bg-[#090a0b] p-6 text-white md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#e2dbb5]">Pricing</p>
+          <h2 className="mt-3 text-3xl font-bold md:text-5xl">Start with visibility. Add ResultDesk when results are due.</h2>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {pricing.map(([name, price, copy]) => (
+              <div className="rounded-xl border border-white/10 bg-white/5 p-5" key={name}>
+                <p className="font-semibold text-[#e2dbb5]">{name}</p>
+                <p className="mt-3 text-2xl font-bold">{price}</p>
+                <p className="mt-4 text-sm leading-6 text-white/70">{copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-8 px-4 py-16 md:grid-cols-[0.8fr_1.2fr] md:items-center">
+        <div>
+          <ShieldCheck className="text-brand" size={34} />
+          <h2 className="mt-4 text-3xl font-bold md:text-5xl">Built to make the school look organized.</h2>
+        </div>
+        <p className="text-lg leading-8 text-slate-600">
+          Every school-owned record carries a school ID. Program work, Weekly Reports, ResultDesk approvals, PDFs, and domain settings are logged, so management can trace what happened without relying on memory.
+        </p>
+      </section>
+
+      <section className="px-4 pb-16 text-center">
+        <div className="mx-auto max-w-4xl rounded-[28px] border border-[#dfe3de] bg-white p-8 shadow-soft">
+          <h2 className="text-3xl font-bold md:text-5xl">Give teachers a simple place to submit. Give management a clear place to approve.</h2>
+          <Button asChild className="mt-6"><Link href="/signup">Start free pilot <ArrowRight size={18} /></Link></Button>
+        </div>
       </section>
     </main>
   );
