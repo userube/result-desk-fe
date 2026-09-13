@@ -21,6 +21,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.npm/
+.yarn/
+.pnpm-store/
 
 # testing
 coverage/
@@ -33,8 +36,16 @@ playwright-report/
 # typescript
 *.tsbuildinfo
 
+# local tooling
+.qodo/
+.turbo/
+.cache/
+tmp/
+temp/
+
 # system/editor
 .DS_Store
 .idea/
 .vscode/
-
+*.swp
+*.swo
