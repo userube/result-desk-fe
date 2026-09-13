@@ -1,12 +1,16 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BookOpen,
   CalendarDays,
   Check,
   ClipboardList,
   FileCheck2,
+  GraduationCap,
+  ImageIcon,
   Layers3,
   School,
+  Settings,
   ShieldCheck,
   Sparkles,
   type LucideIcon
@@ -55,6 +59,15 @@ const pricing = [
   ["Website add-on", "₦100k-₦200k one-time", "Public school website/page, admission inquiry form, and subdomain setup."]
 ];
 
+const orbitIcons: Array<{ Icon: LucideIcon; className: string; tone: string }> = [
+  { Icon: Layers3, className: "left-[12%] top-[31%] rotate-[-11deg]", tone: "bg-cyan-400 text-white" },
+  { Icon: ClipboardList, className: "left-[6%] bottom-[26%] rotate-[-18deg]", tone: "bg-teal-600 text-white" },
+  { Icon: ImageIcon, className: "left-[28%] bottom-[34%] rotate-[-8deg]", tone: "bg-violet-500 text-white" },
+  { Icon: BookOpen, className: "right-[28%] bottom-[35%] rotate-[9deg]", tone: "bg-lime-500 text-white" },
+  { Icon: Layers3, className: "right-[17%] top-[34%] rotate-[12deg]", tone: "bg-green-500 text-white" },
+  { Icon: GraduationCap, className: "right-[5%] bottom-[23%] rotate-[14deg]", tone: "bg-indigo-700 text-white" }
+];
+
 export default function LandingPage() {
   return (
     <main className="bg-[#f3f4f1] text-brand-text">
@@ -73,29 +86,36 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <section className="mx-auto max-w-7xl px-4 pb-16 pt-10">
-        <div className="rounded-[32px] border border-[#dfe3de] bg-[#fbfcfa] p-5 shadow-soft md:p-8">
-          <div className="grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
-            <div className="py-4 md:py-8">
-              <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#e2dbb5]/60 px-3 py-1 text-sm font-semibold text-brand-dark">
-                <Sparkles size={15} /> Built for growing Nigerian schools
-              </p>
-              <h1 className="max-w-4xl text-4xl font-bold leading-tight tracking-normal md:text-6xl">
-                Run school terms, holiday coaching, and results without chasing teachers.
-              </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-                ClassPilot helps schools collect teacher reports, manage programs, track submissions, and publish ResultDesk PDFs from one calm operations portal.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button asChild><Link href="/signup">Start free pilot <ArrowRight size={18} /></Link></Button>
-                <Button asChild variant="outline"><Link href="/demo">View live demo</Link></Button>
-              </div>
-              <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                {["2 active programs", "7 pending submissions", "72% result completion"].map((item) => (
-                  <div className="rounded-md border border-[#dfe3de] bg-white p-4 text-sm font-semibold" key={item}>{item}</div>
-                ))}
-              </div>
-            </div>
+      <section className="relative overflow-hidden px-4 pb-10 pt-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_65%,rgba(239,250,247,0.95),rgba(243,244,241,0)_42%)]" />
+        <div className="absolute left-1/2 top-[340px] hidden h-[820px] w-[1400px] -translate-x-1/2 rounded-[50%] border border-brand/10 md:block" />
+        <div className="absolute left-1/2 top-[430px] hidden h-[650px] w-[1120px] -translate-x-1/2 rounded-[50%] border border-brand/10 md:block" />
+        <div className="absolute left-1/2 top-[520px] hidden h-[500px] w-[880px] -translate-x-1/2 rounded-[50%] border border-brand/10 md:block" />
+
+        {orbitIcons.map(({ Icon, className, tone }) => (
+          <div className={`absolute hidden rounded-2xl bg-white p-4 shadow-[0_18px_35px_rgba(23,23,36,0.16)] md:block ${className}`} key={className}>
+            <span className={`grid size-11 place-items-center rounded-full ${tone}`}>
+              <Icon size={24} />
+            </span>
+          </div>
+        ))}
+
+        <div className="relative mx-auto flex min-h-[780px] max-w-7xl flex-col items-center text-center">
+          <p className="mt-12 inline-flex items-center gap-2 rounded-full bg-[#e2dbb5]/60 px-3 py-1 text-sm font-semibold text-brand-dark">
+            <Sparkles size={15} /> Built for growing Nigerian schools
+          </p>
+          <h1 className="mt-8 max-w-5xl text-5xl font-bold leading-[1.05] tracking-normal md:text-7xl">
+            Easy school operations for <span className="inline-flex rounded-[28px] bg-[#d7f2ef] px-4 pb-2 text-brand-dark">Programs & Results</span>
+          </h1>
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-500">
+            Run school terms, holiday coaching, weekly teacher reports, and ResultDesk PDFs from one simple portal.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Button asChild className="bg-[#171724] shadow-lg hover:bg-brand-dark"><Link href="/signup"><span className="size-2 rounded-full bg-[#e2dbb5]" /> Start free pilot <ArrowRight size={18} /></Link></Button>
+            <Button asChild variant="outline"><Link href="/demo">View live demo</Link></Button>
+          </div>
+
+          <div className="absolute bottom-0 left-1/2 w-full max-w-5xl -translate-x-1/2 px-2">
             <DashboardPreview />
           </div>
         </div>

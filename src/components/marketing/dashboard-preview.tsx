@@ -1,88 +1,127 @@
-import { CheckCircle2, FileText, Smartphone, UserPlus } from "lucide-react";
+import { BarChart3, CalendarDays, CheckCircle2, FileText, HelpCircle, LogOut, Settings, Smartphone, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { school } from "@/lib/demo-data";
 
-const progress = [
-  ["Weekly reports", "11/14", "w-[78%]"],
-  ["Score submissions", "18/25", "w-[72%]"],
-  ["Approvals", "6/8", "w-[75%]"]
-];
+const sidebar = [BarChart3, CalendarDays, FileText, Users, Settings];
 
 export function DashboardPreview() {
   return (
-    <div className="relative min-h-[560px] overflow-hidden rounded-[28px] border border-[#dfe3de] bg-[#f3f4f1] p-4 md:p-6">
-      <div className="absolute left-10 top-10 hidden h-72 w-72 rounded-full border border-[#d9ddd8] md:block" />
-      <div className="absolute bottom-10 right-10 hidden h-80 w-80 rounded-full border border-[#d9ddd8] md:block" />
-
-      <div className="relative mx-auto max-w-xl rounded-[22px] border border-[#dfe3de] bg-white p-4 shadow-soft">
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+    <div className="mx-auto rounded-[30px] border border-[#e3e6e2] bg-white/80 p-3 shadow-[0_28px_90px_rgba(23,23,36,0.18)] backdrop-blur">
+      <div className="overflow-hidden rounded-[24px] border border-[#e8ebe7] bg-white text-left">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand">School workspace</p>
-            <h3 className="mt-1 text-xl font-bold">{school.name}</h3>
-            <p className="text-sm text-slate-500">{school.portal}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand">ClassPilot workspace</p>
+            <h3 className="text-lg font-bold">{school.name}</h3>
           </div>
-          <Button size="sm"><UserPlus size={16} /> Invite teacher</Button>
-        </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg bg-brand-dark p-4 text-white">
-            <p className="text-xs uppercase tracking-wide text-white/60">Active program</p>
-            <p className="mt-3 text-2xl font-bold">First Term</p>
-            <p className="mt-2 text-sm text-white/70">72% result completion</p>
-          </div>
-          <div className="rounded-lg border border-[#dfe3de] bg-[#fbfcfa] p-4">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Another program</p>
-            <p className="mt-3 text-2xl font-bold text-brand-dark">Holiday Coaching</p>
-            <p className="mt-2 text-sm text-slate-500">Reports reviewed</p>
+          <div className="hidden items-center gap-5 text-xs font-medium text-slate-500 sm:flex">
+            <span className="inline-flex items-center gap-1"><HelpCircle size={14} /> Help</span>
+            <span className="inline-flex items-center gap-1"><Smartphone size={14} /> Teacher view</span>
+            <span className="inline-flex items-center gap-1"><LogOut size={14} /> Log out</span>
           </div>
         </div>
 
-        <div className="mt-4 rounded-lg border border-[#dfe3de] bg-[#fbfcfa] p-4">
-          <div className="flex items-center justify-between">
-            <p className="font-semibold">Submission tracker</p>
-            <span className="rounded-full bg-[#e2dbb5]/70 px-2 py-1 text-xs font-semibold text-brand-dark">Live</span>
-          </div>
-          <div className="mt-4 grid gap-4">
-            {progress.map(([label, value, width]) => (
-              <div key={label}>
-                <div className="mb-2 flex justify-between text-sm">
-                  <span className="text-slate-600">{label}</span>
-                  <span className="font-semibold">{value}</span>
+        <div className="grid min-h-[360px] grid-cols-[58px_1fr] bg-[#fbfcfa]">
+          <aside className="border-r border-slate-100 bg-[#edf8f5] px-3 py-5">
+            <div className="mb-8 grid size-9 place-items-center rounded-lg bg-cyan-400 text-white">
+              <LayersIcon />
+            </div>
+            <div className="grid gap-3">
+              {sidebar.map((Icon, index) => (
+                <span className={`grid size-9 place-items-center rounded-md ${index === 0 ? "bg-white text-brand shadow-sm" : "text-slate-500"}`} key={index}>
+                  <Icon size={17} />
+                </span>
+              ))}
+            </div>
+          </aside>
+
+          <div className="p-5">
+            <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+              <section className="rounded-xl border border-slate-100 bg-white p-5">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                  <div>
+                    <h4 className="text-xl font-bold">Hi Admin, let’s get school work moving.</h4>
+                    <p className="mt-1 text-sm text-slate-500">greenfield.classpilot.app</p>
+                  </div>
+                  <Button size="sm"><UserPlus size={15} /> Invite teacher</Button>
                 </div>
-                <div className="h-2 rounded-full bg-slate-200"><div className={`h-2 rounded-full bg-brand ${width}`} /></div>
-              </div>
-            ))}
-          </div>
-        </div>
+                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                  {[
+                    ["Programs", "First Term", "Holiday Coaching"],
+                    ["Reports", "11 submitted", "3 pending"],
+                    ["ResultDesk", "72% complete", "Approval queue"]
+                  ].map(([title, primary, secondary]) => (
+                    <div className="rounded-lg bg-[#f6f8f5] p-4" key={title}>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</p>
+                      <p className="mt-3 font-bold">{primary}</p>
+                      <p className="mt-1 text-xs text-slate-500">{secondary}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
 
-        <div className="mt-4 rounded-lg bg-brand-soft p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="font-semibold">ResultDesk approval queue</p>
-              <p className="text-sm text-slate-600">Primary 1 scores are ready for management review.</p>
+              <section className="rounded-xl border border-slate-100 bg-[#effaf7] p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-brand">Submission status</p>
+                <div className="mt-4 grid gap-3">
+                  {[
+                    ["Weekly reports", "11/14", "w-[78%]"],
+                    ["Scores", "18/25", "w-[72%]"],
+                    ["Approvals", "6/8", "w-[75%]"]
+                  ].map(([label, value, width]) => (
+                    <div key={label}>
+                      <div className="mb-1 flex justify-between text-xs"><span>{label}</span><span className="font-bold">{value}</span></div>
+                      <div className="h-2 rounded-full bg-white"><div className={`h-2 rounded-full bg-brand ${width}`} /></div>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
-            <Button variant="outline" size="sm"><FileText size={16} /> Generate PDFs</Button>
-          </div>
-        </div>
-      </div>
 
-      <div className="absolute bottom-5 left-5 hidden w-56 rounded-xl border border-[#dfe3de] bg-white p-4 shadow-soft lg:block">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand">Teacher reminder</p>
-        <p className="mt-2 text-sm font-semibold">3 reports pending</p>
-        <p className="mt-1 text-xs text-slate-500">Nursery 2, Primary 1, Common Entrance Group</p>
-      </div>
+            <div className="mt-4 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+              <section className="rounded-xl border border-slate-100 bg-white p-5">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold">Today</h4>
+                  <Button variant="outline" size="sm">Review</Button>
+                </div>
+                <div className="mt-4 rounded-lg bg-[#fbf7dc] p-4 text-sm">
+                  <p className="flex items-center gap-2"><CheckCircle2 size={16} className="text-brand" /> Nursery 2 weekly report reviewed</p>
+                  <p className="mt-3 flex items-center gap-2"><CheckCircle2 size={16} className="text-brand" /> Primary 1 scores submitted</p>
+                  <p className="mt-3 flex items-center gap-2 text-slate-500"><CalendarDays size={16} /> Holiday coaching closes Friday</p>
+                </div>
+              </section>
 
-      <div className="absolute bottom-5 right-5 w-56 rounded-[26px] border border-[#dfe3de] bg-brand-dark p-3 text-white shadow-soft">
-        <div className="rounded-[20px] bg-white p-3 text-brand-text">
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold"><Smartphone size={16} /> Teacher submit</div>
-          {["Topics taught", "CA scores", "Class note"].map((item, index) => (
-            <div className="mb-3 flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm" key={item}>
-              <span>{item}</span>
-              <CheckCircle2 className={index < 2 ? "text-brand" : "text-slate-300"} size={16} />
+              <section className="rounded-xl border border-slate-100 bg-white p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h4 className="font-bold">ResultDesk queue</h4>
+                    <p className="mt-1 text-sm text-slate-500">Scores are approved before final PDFs are generated.</p>
+                  </div>
+                  <Button variant="outline" size="sm"><FileText size={15} /> Generate PDFs</Button>
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border border-slate-100 p-4">
+                    <p className="text-xs text-slate-500">Primary 1</p>
+                    <p className="mt-1 font-bold text-brand-dark">Awaiting approval</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-100 p-4">
+                    <p className="text-xs text-slate-500">Book submitted</p>
+                    <p className="mt-1 font-bold text-brand-dark">4 Feb 2026, 5:40PM</p>
+                  </div>
+                </div>
+              </section>
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function LayersIcon() {
+  return (
+    <svg aria-hidden="true" className="size-5" viewBox="0 0 24 24" fill="none">
+      <path d="m12 3 8 4-8 4-8-4 8-4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <path d="m4 12 8 4 8-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="m4 17 8 4 8-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
