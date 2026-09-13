@@ -106,7 +106,10 @@ export default function LandingPage() {
             <Sparkles size={15} /> Built for growing Nigerian schools
           </p>
           <h1 className="mt-8 max-w-5xl text-5xl font-bold leading-[1.05] tracking-normal md:text-7xl">
-            Easy school operations for <TypewriterPhrase />
+            <span className="block">Easy school operations for</span>
+            <span className="mt-3 flex min-h-[1.28em] items-center justify-center py-1 md:mt-4">
+              <TypewriterPhrase />
+            </span>
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-500">
             Run school terms, holiday coaching, weekly teacher reports, and ResultDesk PDFs from one simple portal.
@@ -235,6 +238,45 @@ export default function LandingPage() {
           <Button asChild className="mt-6"><Link href="/signup">Start free pilot <ArrowRight size={18} /></Link></Button>
         </div>
       </section>
+
+      <footer className="border-t border-[#dfe3de] bg-white px-4 py-10">
+        <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
+          <div>
+            <Link href="/" className="inline-flex items-center gap-2 font-bold text-brand-dark">
+              <span className="grid size-9 place-items-center rounded-md bg-brand-dark text-white">E</span>
+              <span>Ewune</span>
+            </Link>
+            <p className="mt-4 max-w-sm text-sm leading-6 text-slate-600">
+              A practical school operations portal by PulchriLabs for programs, weekly reports, approvals, and ResultDesk PDFs.
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-brand-dark">Product</p>
+            <div className="mt-4 grid gap-3 text-sm text-slate-600">
+              <a href="#story">Story</a>
+              <a href="#programs">Programs</a>
+              <a href="#modules">Modules</a>
+              <a href="#pricing">Pricing</a>
+            </div>
+          </div>
+          <div>
+            <p className="font-semibold text-brand-dark">Portal</p>
+            <div className="mt-4 grid gap-3 text-sm text-slate-600">
+              <Link href="/demo">Live demo</Link>
+              <Link href="/login">Login</Link>
+              <Link href="/signup">Start free pilot</Link>
+            </div>
+          </div>
+          <div>
+            <p className="font-semibold text-brand-dark">PulchriLabs</p>
+            <p className="mt-4 text-sm leading-6 text-slate-600">Built for growing Nigerian schools that need clear records without extra admin stress.</p>
+          </div>
+        </div>
+        <div className="mx-auto mt-10 flex max-w-7xl flex-col justify-between gap-3 border-t border-[#edf0ec] pt-5 text-sm text-slate-500 sm:flex-row">
+          <p>© 2026 PulchriLabs. All rights reserved.</p>
+          <p>ResultDesk by Ewune</p>
+        </div>
+      </footer>
     </main>
   );
 }
