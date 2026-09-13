@@ -100,7 +100,7 @@ export default function LandingPage() {
           </div>
         ))}
 
-        <div className="relative mx-auto flex min-h-[780px] max-w-7xl flex-col items-center text-center">
+        <div className="relative mx-auto flex max-w-7xl flex-col items-center text-center">
           <p className="mt-12 inline-flex items-center gap-2 rounded-full bg-[#e2dbb5]/60 px-3 py-1 text-sm font-semibold text-brand-dark">
             <Sparkles size={15} /> Built for growing Nigerian schools
           </p>
@@ -115,7 +115,7 @@ export default function LandingPage() {
             <Button asChild variant="outline"><Link href="/demo">View live demo</Link></Button>
           </div>
 
-          <div className="absolute bottom-0 left-1/2 w-full max-w-5xl -translate-x-1/2 px-2">
+          <div className="mt-16 w-full max-w-5xl px-2 md:mt-20">
             <DashboardPreview />
           </div>
         </div>
