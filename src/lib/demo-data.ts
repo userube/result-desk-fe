@@ -22,3 +22,28 @@ export const activity = [
 ];
 
 export const classes = ["Nursery 1", "Nursery 2", "Primary 1"];
+
+export const teachers = [
+  { name: "Bisi Adeyemi", email: "teacher1@greenfieldcrest.test", role: "Class teacher", assignment: "Nursery 1" },
+  { name: "Chinedu Obi", email: "teacher2@greenfieldcrest.test", role: "Class teacher", assignment: "Nursery 2" },
+  { name: "Mariam Yusuf", email: "teacher3@greenfieldcrest.test", role: "Subject teacher", assignment: "Phonics, Literacy" },
+  { name: "Tunde Lawal", email: "teacher4@greenfieldcrest.test", role: "Subject teacher", assignment: "Mathematics, English" }
+];
+
+export const students = [
+  "Amina Bello",
+  "Daniel Okafor",
+  "Tife Adebanjo",
+  "Mariam Yusuf",
+  "Samuel Bello",
+  "Hassan Okafor"
+];
+
+export const setupItems = [
+  { label: "Add classes", done: true },
+  { label: "Add subjects", done: true },
+  { label: "Invite teachers", done: true },
+  { label: "Add/import students", done: true },
+  { label: "Configure grading scale", done: true },
+  { label: "Configure result template", done: false }
+];

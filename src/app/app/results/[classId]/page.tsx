@@ -2,8 +2,8 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-
-const students = ["Amina Bello", "Daniel Okafor", "Tife Adebanjo", "Mariam Yusuf"];
+import { Badge } from "@/components/ui/badge";
+import { students } from "@/lib/demo-data";
 
 export default function ClassResultsPage() {
   return (
@@ -11,9 +11,9 @@ export default function ClassResultsPage() {
       <Card>
         <CardHeader><CardTitle>Mobile score entry</CardTitle></CardHeader>
         <CardContent className="grid gap-3">
-          {students.map((student) => (
+          {students.map((student, index) => (
             <div className="grid gap-3 rounded-md border border-slate-200 p-3 sm:grid-cols-[1fr_90px_90px]" key={student}>
-              <p className="font-medium">{student}</p>
+              <div><p className="font-medium">{student}</p><Badge className={index < 4 ? undefined : "bg-amber-50 text-amber-700"}>{index < 4 ? "saved" : "missing"}</Badge></div>
               <Input placeholder="CA" />
               <Input placeholder="Exam" />
             </div>
