@@ -1,6 +1,6 @@
-# ClassPilot Frontend
+# Ewune Frontend
 
-Next.js App Router frontend for ClassPilot by PulchriLabs, with ResultDesk as the result-generation module.
+Next.js App Router frontend for Ewune by PulchriLabs, with ResultDesk as the result-generation module.
 
 ## Setup
 
@@ -18,7 +18,7 @@ Next.js App Router frontend for ClassPilot by PulchriLabs, with ResultDesk as th
 
 ## Tenant Notes
 
-The UI is structured around `school.slug` and public school portal paths. Production subdomain routing should map `greenfield.classpilot.app` to the matching tenant and API school context.
+The UI is structured around `school.slug` and public school portal paths. Production subdomain routing should map `greenfield.ewune.app` to the matching tenant and API school context.
 
 ## Deployment
 

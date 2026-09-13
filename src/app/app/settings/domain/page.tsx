@@ -25,7 +25,7 @@ export default function DomainSettingsPage() {
             <div className="mt-4 rounded-md border border-slate-200 p-4 text-sm">
               <p><strong>Type:</strong> CNAME</p>
               <p><strong>Host:</strong> portal</p>
-              <p><strong>Value:</strong> classpilot.app</p>
+              <p><strong>Value:</strong> ewune.app</p>
             </div>
           </CardContent>
         </Card>

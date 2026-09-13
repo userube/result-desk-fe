@@ -16,7 +16,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50 pb-20 text-brand-text md:pb-0">
       <aside className="fixed left-0 top-0 hidden h-full w-64 border-r border-slate-200 bg-white p-5 md:block">
-        <Link href="/app/dashboard" className="font-bold text-brand-dark">ClassPilot</Link>
+        <Link href="/app/dashboard" className="font-bold text-brand-dark">Ewune</Link>
         <nav className="mt-8 grid gap-1">
           {items.map(({ label, href, Icon }) => (
             <Link className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-brand-soft" href={href} key={href}>

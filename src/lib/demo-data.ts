@@ -1,7 +1,7 @@
 export const school = {
   name: "Greenfield Crest School",
   slug: "greenfield",
-  portal: "greenfield.classpilot.app",
+  portal: "greenfield.ewune.app",
   location: "Pakuro, Ogun State",
   email: "hello@greenfieldcrest.test",
   phone: "+234 801 234 5678"

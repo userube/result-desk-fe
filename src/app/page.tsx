@@ -75,8 +75,8 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-30 border-b border-[#dfe3de] bg-[#f3f4f1]/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <Link href="/" className="flex items-center gap-2 font-bold text-brand-dark">
-            <span className="grid size-9 place-items-center rounded-md bg-brand-dark text-white">CP</span>
-            <span>ClassPilot</span>
+            <span className="grid size-9 place-items-center rounded-md bg-brand-dark text-white">E</span>
+            <span>Ewune</span>
             <span className="hidden text-xs font-medium text-slate-500 sm:inline">by PulchriLabs</span>
           </Link>
           <div className="hidden items-center gap-7 text-sm md:flex">
@@ -127,7 +127,7 @@ export default function LandingPage() {
           <p className="text-sm font-semibold uppercase tracking-wide text-brand">The real school story</p>
           <h2 className="mt-3 text-3xl font-bold md:text-5xl">School work should not be trapped with one person.</h2>
           <p className="mt-5 leading-8 text-slate-600">
-            At the end of a week, teachers have taught lessons, given tests, handled concerns, and collected scores. But management still has to chase the evidence. ClassPilot turns that scattered work into a visible routine.
+            At the end of a week, teachers have taught lessons, given tests, handled concerns, and collected scores. But management still has to chase the evidence. Ewune turns that scattered work into a visible routine.
           </p>
         </div>
         <div className="grid gap-3">
@@ -143,7 +143,7 @@ export default function LandingPage() {
       <section className="bg-[#090a0b] py-16 text-white">
         <div className="mx-auto max-w-7xl px-4">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-wide text-[#e2dbb5]">A week with ClassPilot</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-[#e2dbb5]">A week with Ewune</p>
             <h2 className="mt-3 text-3xl font-bold md:text-5xl">From chasing teachers to checking progress.</h2>
           </div>
           <div className="mt-8 grid gap-3 md:grid-cols-5">
@@ -194,11 +194,11 @@ export default function LandingPage() {
 
       <section className="mx-auto grid max-w-7xl gap-4 px-4 py-16 md:grid-cols-2">
         <div className="rounded-2xl border border-[#dfe3de] bg-white p-6">
-          <h2 className="text-2xl font-bold">Before ClassPilot</h2>
+          <h2 className="text-2xl font-bold">Before Ewune</h2>
           <div className="mt-5 grid gap-3">{before.map((item) => <p className="rounded-md bg-slate-50 p-3 text-sm" key={item}>{item}</p>)}</div>
         </div>
         <div className="rounded-2xl border border-brand/20 bg-brand-soft p-6">
-          <h2 className="text-2xl font-bold">After ClassPilot</h2>
+          <h2 className="text-2xl font-bold">After Ewune</h2>
           <div className="mt-5 grid gap-3">{after.map((item) => <p className="rounded-md bg-white p-3 text-sm" key={item}><Check className="mr-2 inline text-brand" size={16} />{item}</p>)}</div>
         </div>
       </section>

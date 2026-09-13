@@ -10,7 +10,7 @@ export function DashboardPreview() {
       <div className="overflow-hidden rounded-[24px] border border-[#e8ebe7] bg-white text-left">
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand">ClassPilot workspace</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand">Ewune workspace</p>
             <h3 className="text-lg font-bold">{school.name}</h3>
           </div>
           <div className="hidden items-center gap-5 text-xs font-medium text-slate-500 sm:flex">
@@ -40,7 +40,7 @@ export function DashboardPreview() {
                 <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                   <div>
                     <h4 className="text-xl font-bold">Hi Admin, let’s get school work moving.</h4>
-                    <p className="mt-1 text-sm text-slate-500">greenfield.classpilot.app</p>
+                    <p className="mt-1 text-sm text-slate-500">greenfield.ewune.app</p>
                   </div>
                   <Button size="sm"><UserPlus size={15} /> Invite teacher</Button>
                 </div>
