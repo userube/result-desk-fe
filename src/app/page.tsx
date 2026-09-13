@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardPreview } from "@/components/marketing/dashboard-preview";
+import { TypewriterPhrase } from "@/components/marketing/typewriter-phrase";
 
 const pressurePoints = [
   "Scores arrive through WhatsApp, Excel, paper, and corridor reminders.",
@@ -105,7 +106,7 @@ export default function LandingPage() {
             <Sparkles size={15} /> Built for growing Nigerian schools
           </p>
           <h1 className="mt-8 max-w-5xl text-5xl font-bold leading-[1.05] tracking-normal md:text-7xl">
-            Easy school operations for <span className="inline-flex rounded-[28px] bg-[#d7f2ef] px-4 pb-2 text-brand-dark">Programs & Results</span>
+            Easy school operations for <TypewriterPhrase />
           </h1>
           <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-500">
             Run school terms, holiday coaching, weekly teacher reports, and ResultDesk PDFs from one simple portal.
