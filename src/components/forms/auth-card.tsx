@@ -10,7 +10,7 @@ export function AuthCard({ title, mode }: { title: string; mode: "login" | "sign
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">{title}</CardTitle>
-          <p className="text-sm text-slate-600">ResultDesk by PulchriLabs</p>
+          <p className="text-sm text-slate-600">ClassPilot by PulchriLabs</p>
         </CardHeader>
         <CardContent>
           <form className="grid gap-4">

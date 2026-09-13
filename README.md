@@ -1,6 +1,6 @@
-# ResultDesk Frontend
+# ClassPilot Frontend
 
-Next.js App Router frontend for ResultDesk by PulchriLabs.
+Next.js App Router frontend for ClassPilot by PulchriLabs, with ResultDesk as the result-generation module.
 
 ## Setup
 
@@ -13,12 +13,12 @@ Next.js App Router frontend for ResultDesk by PulchriLabs.
 
 - Public: `/`, `/pricing`, `/demo`
 - Auth: `/login`, `/signup`, `/accept-invite`, `/forgot-password`, `/reset-password`
-- Tenant app: `/app/dashboard`, `/app/setup`, `/app/teachers`, `/app/classes`, `/app/students`, `/app/weekly-reports`, `/app/results`, `/app/results/[classId]`, `/app/audit-logs`, `/app/settings/school`, `/app/settings/domain`, `/app/settings/grading`, `/app/settings/result-template`
+- Tenant app: `/app/dashboard`, `/app/programs`, `/app/setup`, `/app/teachers`, `/app/classes`, `/app/students`, `/app/weekly-reports`, `/app/results`, `/app/results/[classId]`, `/app/audit-logs`, `/app/settings/school`, `/app/settings/domain`, `/app/settings/grading`, `/app/settings/result-template`
 - Public school portal: `/s/[schoolSlug]`, `/s/[schoolSlug]/admission`
 
 ## Tenant Notes
 
-The UI is structured around `school.slug` and public school portal paths. Production subdomain routing should map `greenfield.resultdesk.app` to the matching tenant and API school context.
+The UI is structured around `school.slug` and public school portal paths. Production subdomain routing should map `greenfield.classpilot.app` to the matching tenant and API school context.
 
 ## Deployment
 

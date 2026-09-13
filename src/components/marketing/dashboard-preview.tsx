@@ -17,9 +17,9 @@ export function DashboardPreview() {
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-3">
           {[
-            ["Pending teacher submissions", "7"],
-            ["Weekly reports submitted", "11"],
-            ["Result generation status", "72%"]
+            ["Active program", "First Term"],
+            ["Another program", "Holiday Coaching"],
+            ["Pending teacher reports", "7"]
           ].map(([label, value]) => (
             <div className="rounded-md border border-slate-200 p-4" key={label}>
               <div className="text-2xl font-bold text-brand-dark">{value}</div>
@@ -29,8 +29,8 @@ export function DashboardPreview() {
           <div className="sm:col-span-3 rounded-md bg-brand-soft p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="font-semibold text-brand-text">Primary 1 result batch</p>
-                <p className="text-sm text-slate-600">Ready for management approval</p>
+                <p className="font-semibold text-brand-text">Score submissions awaiting approval</p>
+                <p className="text-sm text-slate-600">ResultDesk is ready to generate Primary 1 PDFs</p>
               </div>
               <Button variant="outline" size="sm"><FileText size={16} /> Generate PDF result</Button>
             </div>

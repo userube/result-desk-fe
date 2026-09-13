@@ -1,7 +1,7 @@
 export const school = {
   name: "Greenfield Crest School",
   slug: "greenfield",
-  portal: "greenfield.resultdesk.app",
+  portal: "greenfield.classpilot.app",
   location: "Pakuro, Ogun State",
   email: "hello@greenfieldcrest.test",
   phone: "+234 801 234 5678"
@@ -10,18 +10,25 @@ export const school = {
 export const metrics = [
   { label: "Total students", value: "20" },
   { label: "Teachers", value: "4" },
-  { label: "Pending submissions", value: "7" },
-  { label: "Weekly reports", value: "11" }
+  { label: "Active programs", value: "2" },
+  { label: "Pending submissions", value: "7" }
 ];
 
 export const activity = [
-  "Primary 1 Mathematics scores submitted",
+  "First Term Primary 1 Mathematics scores submitted",
+  "Holiday Coaching weekly report reviewed",
   "Nursery 2 weekly report reviewed",
   "Teacher invitation sent to Mrs. Adeyemi",
-  "Result batch for Primary 1 awaiting approval"
+  "ResultDesk batch for Primary 1 awaiting approval"
 ];
 
 export const classes = ["Nursery 1", "Nursery 2", "Primary 1"];
+
+export const programs = [
+  { name: "First Term", type: "Academic term", status: "Active", groups: "Nursery 1, Nursery 2, Primary 1" },
+  { name: "Holiday Coaching", type: "Holiday coaching", status: "Completed", groups: "Primary 5 Common Entrance Group" },
+  { name: "WAEC Prep", type: "Exam prep", status: "Draft", groups: "SS3 WAEC Prep" }
+];
 
 export const teachers = [
   { name: "Bisi Adeyemi", email: "teacher1@greenfieldcrest.test", role: "Class teacher", assignment: "Nursery 1" },
