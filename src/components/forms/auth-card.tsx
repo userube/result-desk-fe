@@ -64,68 +64,68 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
   const showPassword = mode !== "forgot";
 
   return (
-    <main className="min-h-screen bg-[#f3f4f1] px-4 py-6 text-brand-text md:px-8">
-      <div className="mx-auto grid min-h-[calc(100vh-48px)] max-w-7xl overflow-hidden rounded-[28px] border border-[#dfe3de] bg-white shadow-[0_28px_90px_rgba(23,23,36,0.12)] lg:grid-cols-[0.95fr_1.05fr]">
-        <section className="relative overflow-hidden bg-[#063d35] p-6 text-white md:p-10">
+    <main className="flex min-h-screen items-center justify-center bg-[#f3f4f1] px-4 py-8 text-brand-text sm:py-10 md:px-8">
+      <div className="grid w-full max-w-6xl overflow-hidden rounded-[24px] border border-[#dfe3de] bg-white shadow-[0_24px_70px_rgba(23,23,36,0.12)] lg:grid-cols-[0.86fr_1.14fr]">
+        <section className="relative overflow-hidden bg-[#063d35] p-5 text-white sm:p-7 md:p-8">
           <div className="absolute left-[-120px] top-[-120px] h-72 w-72 rounded-full border border-white/10" />
           <div className="absolute bottom-[-160px] right-[-120px] h-96 w-96 rounded-full border border-white/10" />
           <Link href="/" className="relative inline-flex items-center gap-2 font-bold">
-            <span className="grid size-10 place-items-center rounded-xl bg-white text-brand-dark">E</span>
+            <span className="grid size-9 place-items-center rounded-xl bg-white text-brand-dark">E</span>
             <span>Ewune</span>
-            <span className="text-xs font-medium text-white/60">by PulchriLabs</span>
+            <span className="hidden text-xs font-medium text-white/60 sm:inline">by PulchriLabs</span>
           </Link>
 
-          <div className="relative mt-16 max-w-lg">
+          <div className="relative mt-8 max-w-lg md:mt-10">
             <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-semibold text-[#e2dbb5]">
               <Sparkles size={15} /> {copy.sideTitle}
             </p>
-            <h1 className="mt-5 text-4xl font-bold leading-tight md:text-5xl">
+            <h1 className="mt-4 text-2xl font-bold leading-tight sm:text-3xl md:text-4xl">
               Teachers submit. Management approves. Results are ready.
             </h1>
-            <p className="mt-5 leading-8 text-white/72">
+            <p className="mt-4 text-sm leading-7 text-white/72 md:text-base">
               Ewune gives growing schools one practical flow for programs, weekly teacher reports, result approvals, and parent-ready PDFs.
             </p>
           </div>
 
-          <div className="relative mt-10 grid gap-3">
+          <div className="relative mt-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
             {storySteps.map((step, index) => (
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/8 p-4" key={step}>
-                <span className="grid size-9 place-items-center rounded-xl bg-[#e2dbb5] text-sm font-bold text-brand-dark">{index + 1}</span>
-                <span className="text-sm font-medium text-white/86">{step}</span>
+              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/8 p-3" key={step}>
+                <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-[#e2dbb5] text-sm font-bold text-brand-dark">{index + 1}</span>
+                <span className="text-xs font-medium leading-5 text-white/86 sm:text-sm">{step}</span>
               </div>
             ))}
           </div>
 
-          <Card className="relative mt-10 border-white/10 bg-white/10 text-white shadow-none">
-            <CardContent className="p-5">
+          <Card className="relative mt-6 border-white/10 bg-white/10 text-white shadow-none">
+            <CardContent className="p-4">
               <p className="text-sm text-white/65">Demo school</p>
-              <p className="mt-2 text-xl font-bold">Greenfield Crest School</p>
+              <p className="mt-2 text-lg font-bold">Greenfield Crest School</p>
               <p className="mt-1 text-sm text-white/65">greenfield.ewune.app</p>
-              <div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs">
+              <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
                 {["20 students", "4 teachers", "72% ready"].map((item) => (
-                  <span className="rounded-xl bg-white/10 px-2 py-3" key={item}>{item}</span>
+                  <span className="rounded-xl bg-white/10 px-2 py-2.5" key={item}>{item}</span>
                 ))}
               </div>
             </CardContent>
           </Card>
         </section>
 
-        <section className="flex items-center justify-center bg-[#fbfcfa] p-5 md:p-10">
-          <div className="w-full max-w-2xl">
-            <div className="mb-8">
+        <section className="flex items-center justify-center bg-[#fbfcfa] p-5 sm:p-7 md:p-8">
+          <div className="w-full max-w-xl">
+            <div className="mb-6">
               <p className="text-sm font-semibold uppercase tracking-wide text-brand">{copy.eyebrow}</p>
-              <h2 className="mt-3 text-3xl font-bold md:text-4xl">{copy.title}</h2>
+              <h2 className="mt-3 text-2xl font-bold sm:text-3xl">{copy.title}</h2>
               <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">{copy.copy}</p>
             </div>
 
             <form className="grid gap-4">
               {isSignup && (
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <Field icon={School} label="School name" placeholder="Greenfield Crest School" />
                   <Field icon={Mail} label="School email" placeholder="hello@greenfieldcrest.com" type="email" />
                   <Field icon={Phone} label="Phone number" placeholder="+234 801 234 5678" />
                   <Field icon={MapPin} label="Preferred subdomain" prefix="ewune.app/" placeholder="greenfield" />
-                  <div className="md:col-span-2">
+                  <div className="sm:col-span-2">
                     <Field icon={GraduationCap} label="Current academic session" placeholder="2026/2027 First Term" />
                   </div>
                 </div>
