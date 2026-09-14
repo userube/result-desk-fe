@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2, GraduationCap, LockKeyhole, Mail, MapPin, Phone, School, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { apiPost, AuthResponse, LoginPayload, SignupPayload, storeAuthTokens } from "@/lib/api";
 
 type AuthMode = "login" | "signup" | "invite" | "forgot" | "reset";
 
@@ -57,11 +62,61 @@ const modeCopy: Record<AuthMode, { eyebrow: string; title: string; copy: string;
 };
 
 export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
+  const router = useRouter();
   const copy = modeCopy[mode];
   const isSignup = mode === "signup";
   const isLogin = mode === "login";
   const showEmail = mode !== "reset";
   const showPassword = mode !== "forgot";
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    const form = new FormData(event.currentTarget);
+
+    try {
+      if (isSignup) {
+        const payload: SignupPayload = {
+          schoolName: getFormValue(form, "schoolName"),
+          schoolEmail: getFormValue(form, "schoolEmail"),
+          phone: getFormValue(form, "phone"),
+          address: getFormValue(form, "address"),
+          preferredSubdomain: getFormValue(form, "preferredSubdomain"),
+          currentAcademicSession: getFormValue(form, "currentAcademicSession"),
+          currentTerm: getFormValue(form, "currentTerm"),
+          ownerEmail: getFormValue(form, "ownerEmail"),
+          firstName: getFormValue(form, "firstName"),
+          lastName: getFormValue(form, "lastName"),
+          password: getFormValue(form, "password")
+        };
+        const tokens = await apiPost<AuthResponse, SignupPayload>("/auth/signup", payload);
+        storeAuthTokens(tokens);
+        router.push("/app/setup");
+        return;
+      }
+
+      if (isLogin) {
+        const payload: LoginPayload = {
+          email: getFormValue(form, "email"),
+          password: getFormValue(form, "password")
+        };
+        const tokens = await apiPost<AuthResponse, LoginPayload>("/auth/login", payload);
+        storeAuthTokens(tokens);
+        router.push("/app/dashboard");
+        return;
+      }
+
+      router.push(copy.href);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f3f4f1] px-4 py-8 text-brand-text sm:py-10 md:px-8">
@@ -125,25 +180,35 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
               <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">{copy.copy}</p>
             </div>
 
-            <form className="grid gap-4">
+            <form className="grid gap-4" onSubmit={handleSubmit}>
               {isSignup && (
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field icon={School} label="School name" placeholder="Greenfield Crest School" />
-                  <Field icon={Mail} label="School email" placeholder="hello@greenfieldcrest.com" type="email" />
-                  <Field icon={Phone} label="Phone number" placeholder="+234 801 234 5678" />
-                  <Field icon={MapPin} label="Preferred subdomain" prefix="ewune.app/" placeholder="greenfield" />
+                  <Field icon={School} label="School name" name="schoolName" placeholder="Greenfield Crest School" required />
+                  <Field icon={Mail} label="School email" name="schoolEmail" placeholder="hello@greenfieldcrest.com" type="email" required />
+                  <Field icon={Phone} label="Phone number" name="phone" placeholder="+234 801 234 5678" required />
+                  <Field icon={MapPin} label="Preferred subdomain" name="preferredSubdomain" prefix="ewune.app/" placeholder="greenfield" required />
                   <div className="sm:col-span-2">
-                    <Field icon={GraduationCap} label="Current academic session" placeholder="2026/2027 First Term" />
+                    <Field icon={MapPin} label="School address" name="address" placeholder="Pakuro, Ogun State" required />
+                  </div>
+                  <Field icon={GraduationCap} label="Current academic session" name="currentAcademicSession" placeholder="2026/2027" required />
+                  <Field icon={GraduationCap} label="Current term" name="currentTerm" placeholder="First Term" required />
+                  <Field icon={Mail} label="Owner email" name="ownerEmail" placeholder="owner@greenfieldcrest.com" type="email" required />
+                  <Field icon={School} label="Owner first name" name="firstName" placeholder="Ada" required />
+                  <Field icon={School} label="Owner last name" name="lastName" placeholder="Okafor" required />
+                  <div className="sm:col-span-2">
+                    <Field icon={LockKeyhole} label="Password" name="password" placeholder="At least 8 characters" type="password" required />
                   </div>
                 </div>
               )}
 
-              {showEmail && !isSignup && <Field icon={Mail} label="Email address" placeholder={isLogin ? "admin@greenfieldcrest.com" : "teacher@greenfieldcrest.com"} type="email" />}
-              {showPassword && <Field icon={LockKeyhole} label={mode === "reset" ? "New password" : "Password"} placeholder="At least 8 characters" type="password" />}
-              {mode === "reset" && <Field icon={ShieldCheck} label="Confirm password" placeholder="Repeat new password" type="password" />}
+              {showEmail && !isSignup && <Field icon={Mail} label="Email address" name="email" placeholder={isLogin ? "owner@greenfieldcrest.test" : "teacher@greenfieldcrest.com"} type="email" required />}
+              {showPassword && !isSignup && <Field icon={LockKeyhole} label={mode === "reset" ? "New password" : "Password"} name="password" placeholder="At least 8 characters" type="password" required />}
+              {mode === "reset" && <Field icon={ShieldCheck} label="Confirm password" name="confirmPassword" placeholder="Repeat new password" type="password" required />}
 
-              <Button asChild className="mt-2 h-12 rounded-xl text-base">
-                <Link href={copy.href}>{copy.cta} <ArrowRight size={18} /></Link>
+              {error && <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p>}
+
+              <Button className="mt-2 h-12 rounded-xl text-base" disabled={isSubmitting} type="submit">
+                {isSubmitting ? "Please wait..." : copy.cta} {!isSubmitting && <ArrowRight size={18} />}
               </Button>
             </form>
 
@@ -173,15 +238,19 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
 function Field({
   icon: Icon,
   label,
+  name,
   placeholder,
   prefix,
-  type = "text"
+  type = "text",
+  required = false
 }: {
   icon: typeof School;
   label: string;
+  name: string;
   placeholder: string;
   prefix?: string;
   type?: string;
+  required?: boolean;
 }) {
   return (
     <div className="grid gap-2">
@@ -191,10 +260,17 @@ function Field({
         {prefix && <span className="mr-1 text-sm text-slate-400">{prefix}</span>}
         <Input
           className="h-10 border-0 bg-transparent px-0 shadow-none focus:border-0 focus:ring-0"
+          name={name}
           placeholder={placeholder}
+          required={required}
           type={type}
         />
       </div>
     </div>
   );
+}
+
+function getFormValue(form: FormData, key: string) {
+  const value = form.get(key);
+  return typeof value === "string" ? value.trim() : "";
 }
