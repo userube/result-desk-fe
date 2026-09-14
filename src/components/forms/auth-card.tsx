@@ -66,7 +66,7 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f3f4f1] px-4 py-8 text-brand-text sm:py-10 md:px-8">
       <div className="grid w-full max-w-6xl overflow-hidden rounded-[24px] border border-[#dfe3de] bg-white shadow-[0_24px_70px_rgba(23,23,36,0.12)] lg:grid-cols-[0.86fr_1.14fr]">
-        <section className="relative overflow-hidden bg-[#063d35] p-5 text-white sm:p-7 md:p-8">
+        <section className="relative hidden overflow-hidden bg-[#063d35] p-8 text-white lg:block">
           <div className="absolute left-[-120px] top-[-120px] h-72 w-72 rounded-full border border-white/10" />
           <div className="absolute bottom-[-160px] right-[-120px] h-96 w-96 rounded-full border border-white/10" />
           <Link href="/" className="relative inline-flex items-center gap-2 font-bold">
@@ -112,6 +112,13 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
 
         <section className="flex items-center justify-center bg-[#fbfcfa] p-5 sm:p-7 md:p-8">
           <div className="w-full max-w-xl">
+            <Link href="/" className="mb-6 flex items-center gap-2 font-bold text-brand-dark lg:hidden">
+              <span className="grid size-10 place-items-center rounded-xl bg-brand-dark text-white">E</span>
+              <span>
+                <span className="block">Ewune</span>
+                <span className="block text-xs font-medium text-slate-500">by PulchriLabs</span>
+              </span>
+            </Link>
             <div className="mb-6">
               <p className="text-sm font-semibold uppercase tracking-wide text-brand">{copy.eyebrow}</p>
               <h2 className="mt-3 text-2xl font-bold sm:text-3xl">{copy.title}</h2>
