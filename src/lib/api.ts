@@ -25,10 +25,39 @@ export type LoginPayload = {
 };
 
 export async function apiPost<TResponse, TPayload>(path: string, payload: TPayload): Promise<TResponse> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  return apiRequest<TResponse>(path, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
+  });
+}
+
+export async function apiGet<TResponse>(path: string): Promise<TResponse> {
+  return apiRequest<TResponse>(path);
+}
+
+export async function apiPut<TResponse, TPayload>(path: string, payload: TPayload): Promise<TResponse> {
+  return apiRequest<TResponse>(path, {
+    method: "PUT",
+    body: JSON.stringify(payload)
+  });
+}
+
+export async function apiPatch<TResponse, TPayload>(path: string, payload: TPayload): Promise<TResponse> {
+  return apiRequest<TResponse>(path, {
+    method: "PATCH",
+    body: JSON.stringify(payload)
+  });
+}
+
+async function apiRequest<TResponse>(path: string, init?: RequestInit): Promise<TResponse> {
+  const headers = new Headers(init?.headers);
+  headers.set("Content-Type", "application/json");
+  const token = getAccessToken();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...init,
+    headers
   });
 
   const data = await response.json().catch(() => null);
@@ -44,4 +73,9 @@ export async function apiPost<TResponse, TPayload>(path: string, payload: TPaylo
 export function storeAuthTokens(tokens: AuthResponse) {
   window.localStorage.setItem("ewune_access_token", tokens.accessToken);
   window.localStorage.setItem("ewune_refresh_token", tokens.refreshToken);
+}
+
+export function getAccessToken() {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem("ewune_access_token") ?? "";
 }
