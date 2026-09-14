@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2, GraduationCap, LockKeyhole, Mail, MapPin, Phone, School, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -70,10 +70,21 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
   const showPassword = mode !== "forgot";
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [inviteToken, setInviteToken] = useState("");
+  const [resetToken, setResetToken] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (mode === "invite") setInviteToken(params.get("token") ?? "");
+    if (mode === "reset") setResetToken(params.get("token") ?? "");
+  }, [mode]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setSuccess("");
     setIsSubmitting(true);
 
     const form = new FormData(event.currentTarget);
@@ -107,6 +118,35 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
         const tokens = await apiPost<AuthResponse, LoginPayload>("/auth/login", payload);
         storeAuthTokens(tokens);
         router.push("/app/dashboard");
+        return;
+      }
+
+      if (mode === "invite") {
+        const token = inviteToken || getFormValue(form, "token");
+        const firstName = getFormValue(form, "firstName");
+        const lastName = getFormValue(form, "lastName");
+        const password = getFormValue(form, "password");
+        await apiPost<{ email: string }, { token: string; firstName: string; lastName: string; password: string }>("/invitations/accept", { token, firstName, lastName, password });
+        const tokens = await apiPost<AuthResponse, LoginPayload>("/auth/login", { email: getFormValue(form, "email"), password });
+        storeAuthTokens(tokens);
+        router.push("/app/dashboard");
+        return;
+      }
+
+      if (mode === "forgot") {
+        const response = await apiPost<{ message: string; resetUrl?: string }, { email: string }>("/auth/forgot-password", { email: getFormValue(form, "email") });
+        setSuccess(response.resetUrl ? `${response.message} Demo reset link: ${response.resetUrl}` : response.message);
+        return;
+      }
+
+      if (mode === "reset") {
+        const password = getFormValue(form, "password");
+        const confirmPassword = getFormValue(form, "confirmPassword");
+        if (password !== confirmPassword) throw new Error("Passwords do not match");
+        const token = resetToken || getFormValue(form, "token");
+        const response = await apiPost<{ message: string }, { token: string; password: string }>("/auth/reset-password", { token, password });
+        setSuccess(response.message);
+        router.push("/login");
         return;
       }
 
@@ -201,11 +241,23 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
                 </div>
               )}
 
-              {showEmail && !isSignup && <Field icon={Mail} label="Email address" name="email" placeholder={isLogin ? "owner@greenfieldcrest.test" : "teacher@greenfieldcrest.com"} type="email" required />}
-              {showPassword && !isSignup && <Field icon={LockKeyhole} label={mode === "reset" ? "New password" : "Password"} name="password" placeholder="At least 8 characters" type="password" required />}
+              {mode === "invite" && (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2"><Field icon={Mail} label="Email address" name="email" placeholder="teacher@school.com" type="email" required /></div>
+                  <Field icon={School} label="First name" name="firstName" placeholder="Bisi" required />
+                  <Field icon={School} label="Last name" name="lastName" placeholder="Adeyemi" required />
+                  <div className="sm:col-span-2"><Field icon={LockKeyhole} label="Password" name="password" placeholder="At least 8 characters" type="password" required /></div>
+                  {!inviteToken && <div className="sm:col-span-2"><Field icon={ShieldCheck} label="Invite token" name="token" placeholder="Paste invite token" required /></div>}
+                </div>
+              )}
+
+              {showEmail && !isSignup && mode !== "invite" && <Field icon={Mail} label="Email address" name="email" placeholder={isLogin ? "owner@greenfieldcrest.test" : "teacher@greenfieldcrest.com"} type="email" required />}
+              {mode === "reset" && !resetToken && <Field icon={ShieldCheck} label="Reset token" name="token" placeholder="Paste reset token" required />}
+              {showPassword && !isSignup && mode !== "invite" && <Field icon={LockKeyhole} label={mode === "reset" ? "New password" : "Password"} name="password" placeholder="At least 8 characters" type="password" required />}
               {mode === "reset" && <Field icon={ShieldCheck} label="Confirm password" name="confirmPassword" placeholder="Repeat new password" type="password" required />}
 
               {error && <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p>}
+              {success && <p className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-800">{success}</p>}
 
               <Button className="mt-2 h-12 rounded-xl text-base" disabled={isSubmitting} type="submit">
                 {isSubmitting ? "Please wait..." : copy.cta} {!isSubmitting && <ArrowRight size={18} />}

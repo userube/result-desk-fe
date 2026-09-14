@@ -106,8 +106,19 @@ export default function StudentsPage() {
                 <div className="grid gap-2"><Label>First name</Label><Input name="firstName" required /></div>
                 <div className="grid gap-2"><Label>Last name</Label><Input name="lastName" required /></div>
                 <div className="grid gap-2"><Label>Admission number</Label><Input name="admissionNumber" required /></div>
-                <div className="grid gap-2"><Label>Gender</Label><Input name="gender" placeholder="Female" required /></div>
-                <div className="grid gap-2"><Label>Class ID</Label><Input name="classId" defaultValue={classes[0]?.id ?? ""} required /></div>
+                <div className="grid gap-2">
+                  <Label>Gender</Label>
+                  <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm" name="gender" required>
+                    <option>Female</option>
+                    <option>Male</option>
+                  </select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Class</Label>
+                  <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm" name="classId" required>
+                    {classes.map((klass) => <option value={klass.id} key={klass.id}>{klass.name}</option>)}
+                  </select>
+                </div>
                 <div className="grid gap-2"><Label>Guardian name</Label><Input name="parentName" /></div>
                 <div className="grid gap-2"><Label>Guardian phone</Label><Input name="parentPhone" /></div>
                 <Button>Add student record</Button>

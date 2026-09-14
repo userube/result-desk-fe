@@ -31,6 +31,14 @@ export async function apiPost<TResponse, TPayload>(path: string, payload: TPaylo
   });
 }
 
+export async function refreshAuthToken() {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) throw new Error("Refresh token is missing");
+  const tokens = await apiPost<AuthResponse, { refreshToken: string }>("/auth/refresh", { refreshToken });
+  storeAuthTokens(tokens);
+  return tokens.accessToken;
+}
+
 export async function apiGet<TResponse>(path: string): Promise<TResponse> {
   return apiRequest<TResponse>(path);
 }
@@ -62,6 +70,16 @@ async function apiRequest<TResponse>(path: string, init?: RequestInit): Promise<
 
   const data = await response.json().catch(() => null);
 
+  if (response.status === 401 && getRefreshToken() && !path.includes("/auth/refresh")) {
+    const nextToken = await refreshAuthToken();
+    headers.set("Authorization", `Bearer ${nextToken}`);
+    const retry = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
+    const retryData = await retry.json().catch(() => null);
+    if (retry.ok) return retryData as TResponse;
+    const retryMessage = Array.isArray(retryData?.message) ? retryData.message.join(", ") : retryData?.message;
+    throw new Error(retryMessage || "Request failed. Please login again.");
+  }
+
   if (!response.ok) {
     const message = Array.isArray(data?.message) ? data.message.join(", ") : data?.message;
     throw new Error(message || "Request failed. Please try again.");
@@ -78,4 +96,18 @@ export function storeAuthTokens(tokens: AuthResponse) {
 export function getAccessToken() {
   if (typeof window === "undefined") return "";
   return window.localStorage.getItem("ewune_access_token") ?? "";
+}
+
+export function getRefreshToken() {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem("ewune_refresh_token") ?? "";
+}
+
+export function clearAuthTokens() {
+  window.localStorage.removeItem("ewune_access_token");
+  window.localStorage.removeItem("ewune_refresh_token");
+}
+
+export function hasAuthTokens() {
+  return Boolean(getAccessToken() && getRefreshToken());
 }

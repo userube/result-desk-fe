@@ -1,5 +1,10 @@
+"use client";
+
 import Link from "next/link";
-import { BarChart3, BookOpenCheck, ClipboardList, Globe2, Home, Layers3, Settings, ShieldCheck, UserPlus, Users, type LucideIcon } from "lucide-react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { BarChart3, BookOpenCheck, ClipboardList, Globe2, Home, Layers3, LogOut, Settings, ShieldCheck, UserPlus, Users, type LucideIcon } from "lucide-react";
+import { clearAuthTokens, hasAuthTokens } from "@/lib/api";
 
 const items: Array<{ label: string; href: `/app/${string}`; Icon: LucideIcon }> = [
   { label: "Dashboard", href: "/app/dashboard", Icon: Home },
@@ -13,6 +18,17 @@ const items: Array<{ label: string; href: `/app/${string}`; Icon: LucideIcon }> 
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!hasAuthTokens()) router.replace("/login");
+  }, [router]);
+
+  function logout() {
+    clearAuthTokens();
+    router.replace("/login");
+  }
+
   return (
     <div className="min-h-screen bg-[#f5f7f4] pb-20 text-brand-text md:pb-0">
       <aside className="fixed left-0 top-0 hidden h-full w-72 border-r border-slate-200 bg-white p-5 md:block">
@@ -55,6 +71,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="hidden items-center gap-3 sm:flex">
               <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand">greenfield.ewune.app</span>
               <span className="grid size-10 place-items-center rounded-xl bg-[#effaf7] text-brand"><BarChart3 size={20} /></span>
+              <button className="grid size-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" onClick={logout} type="button" aria-label="Log out">
+                <LogOut size={18} />
+              </button>
             </div>
           </div>
         </header>
