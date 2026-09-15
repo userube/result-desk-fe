@@ -27,13 +27,26 @@ export default function SchoolSettingsPage() {
   async function saveSchool(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const school = await apiPatch<SetupState["school"], { name: string; email: string; phone: string; address: string }>("/schools/current", {
+    const updated = await apiPatch<SetupState, {
+      name: string;
+      email: string;
+      phone: string;
+      address: string;
+      currentAcademicSession: string;
+      currentTerm: string;
+      ownerEmail: string;
+      ownerFirstName: string;
+    }>("/schools/current", {
       name: String(form.get("name") ?? ""),
       email: String(form.get("email") ?? ""),
       phone: String(form.get("phone") ?? ""),
-      address: String(form.get("address") ?? "")
+      address: String(form.get("address") ?? ""),
+      currentAcademicSession: String(form.get("currentAcademicSession") ?? ""),
+      currentTerm: String(form.get("currentTerm") ?? ""),
+      ownerEmail: String(form.get("ownerEmail") ?? ""),
+      ownerFirstName: String(form.get("ownerFirstName") ?? "")
     });
-    setState((current) => current ? { ...current, school } : current);
+    setState(updated);
     setMessage("School profile saved.");
   }
 
@@ -54,8 +67,10 @@ export default function SchoolSettingsPage() {
               <div className="grid gap-2"><Label>School email</Label><Input name="email" defaultValue={state?.school.email ?? ""} /></div>
               <div className="grid gap-2"><Label>Phone number</Label><Input name="phone" defaultValue={state?.school.phone ?? ""} /></div>
               <div className="grid gap-2"><Label>School address</Label><Input name="address" defaultValue={state?.school.address ?? "Pakuro, Ogun State"} /></div>
-              <div className="grid gap-2"><Label>Current academic session</Label><Input value={state?.currentSession?.name ?? "2026/2027"} readOnly /></div>
-              <div className="grid gap-2"><Label>Current term</Label><Input value={state?.currentTerm?.name ?? "First Term"} readOnly /></div>
+              <div className="grid gap-2"><Label>Current academic session</Label><Input name="currentAcademicSession" defaultValue={state?.currentSession?.name ?? "2026/2027"} /></div>
+              <div className="grid gap-2"><Label>Current term</Label><Input name="currentTerm" defaultValue={state?.currentTerm?.name ?? "First Term"} /></div>
+              <div className="grid gap-2"><Label>Owner email</Label><Input name="ownerEmail" defaultValue={state?.owner?.email ?? "owner@greenfieldcrest.com"} type="email" /></div>
+              <div className="grid gap-2"><Label>Owner first name</Label><Input name="ownerFirstName" defaultValue={state?.owner?.firstName ?? ""} /></div>
               <div className="grid gap-2 md:col-span-2"><Label>Address notes</Label><Textarea defaultValue={state?.school.address ?? "Pakuro, Ogun State"} /></div>
               {message && <p className="text-sm font-medium text-brand md:col-span-2">{message}</p>}
               <Button className="md:col-span-2">Save school profile</Button>
@@ -71,15 +86,6 @@ export default function SchoolSettingsPage() {
               <p className="mt-4 text-xl font-bold">{state?.school.name ?? "Greenfield Crest School"}</p>
               <p className="mt-1 text-sm text-white/65">{state?.school.slug ?? "greenfield"}.ewune.app</p>
               <p className="mt-4 text-sm leading-6 text-white/72">This identity appears on the public school page, result PDFs, and admission inquiry forms.</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate-200 bg-white shadow-sm">
-            <CardHeader><CardTitle>Owner contact</CardTitle></CardHeader>
-            <CardContent className="grid gap-3">
-              <div className="grid gap-2"><Label>Owner email</Label><Input value={state?.owner?.email ?? "owner@greenfieldcrest.com"} readOnly /></div>
-              <div className="grid gap-2"><Label>Owner first name</Label><Input value={state?.owner?.firstName ?? ""} readOnly /></div>
-              <div className="grid gap-2"><Label>Owner last name</Label><Input value={state?.owner?.lastName ?? ""} readOnly /></div>
             </CardContent>
           </Card>
 

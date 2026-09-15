@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2, GraduationCap, LockKeyhole, Mail, MapPin, Phone, School, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, LockKeyhole, Mail, MapPin, School, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -93,12 +93,7 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
       if (isSignup) {
         const payload: SignupPayload = {
           schoolName: getFormValue(form, "schoolName"),
-          schoolEmail: getFormValue(form, "schoolEmail"),
-          phone: getFormValue(form, "phone"),
-          address: getFormValue(form, "address"),
           preferredSubdomain: getFormValue(form, "preferredSubdomain"),
-          currentAcademicSession: getFormValue(form, "currentAcademicSession"),
-          currentTerm: getFormValue(form, "currentTerm"),
           ownerEmail: getFormValue(form, "ownerEmail"),
           firstName: getFormValue(form, "firstName"),
           lastName: getFormValue(form, "lastName"),
@@ -224,14 +219,7 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
               {isSignup && (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field icon={School} label="School name" name="schoolName" placeholder="Greenfield Crest School" required />
-                  <Field icon={Mail} label="School email" name="schoolEmail" placeholder="hello@greenfieldcrest.com" type="email" required />
-                  <Field icon={Phone} label="Phone number" name="phone" placeholder="+234 801 234 5678" required />
                   <Field icon={MapPin} label="Preferred subdomain" name="preferredSubdomain" prefix="ewune.app/" placeholder="greenfield" required />
-                  <div className="sm:col-span-2">
-                    <Field icon={MapPin} label="School address" name="address" placeholder="Pakuro, Ogun State" required />
-                  </div>
-                  <Field icon={GraduationCap} label="Current academic session" name="currentAcademicSession" placeholder="2026/2027" required />
-                  <Field icon={GraduationCap} label="Current term" name="currentTerm" placeholder="First Term" required />
                   <Field icon={Mail} label="Owner email" name="ownerEmail" placeholder="owner@greenfieldcrest.com" type="email" required />
                   <Field icon={School} label="Owner first name" name="firstName" placeholder="Ada" required />
                   <Field icon={School} label="Owner last name" name="lastName" placeholder="Okafor" required />

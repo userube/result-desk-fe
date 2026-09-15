@@ -7,12 +7,7 @@ export type AuthResponse = {
 
 export type SignupPayload = {
   schoolName: string;
-  schoolEmail: string;
-  phone: string;
-  address: string;
   preferredSubdomain: string;
-  currentAcademicSession: string;
-  currentTerm: string;
   ownerEmail: string;
   firstName: string;
   lastName: string;
