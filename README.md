@@ -22,4 +22,10 @@ The UI is structured around `school.slug` and public school portal paths. Produc
 
 ## Deployment
 
-Deploy to Vercel and set `NEXT_PUBLIC_API_BASE_URL` to the Railway API URL.
+Deploy to Vercel and set `NEXT_PUBLIC_API_BASE_URL` to the backend API origin, for example:
+
+```text
+https://your-render-service.onrender.com
+```
+
+Do not set it to the Vercel frontend URL, and do not leave it blank. After changing this environment variable, redeploy the frontend because `NEXT_PUBLIC_*` values are baked into the browser bundle at build time.
