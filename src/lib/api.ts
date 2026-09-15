@@ -1,4 +1,6 @@
-export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:3001").replace(/\/$/, "");
+export const API_BASE_URL = (
+  process.env.API_BASE_URL?.trim() || "http://localhost:3001"
+).replace(/\/$/, "");
 
 export type AuthResponse = {
   accessToken: string;
@@ -19,17 +21,23 @@ export type LoginPayload = {
   password: string;
 };
 
-export async function apiPost<TResponse, TPayload>(path: string, payload: TPayload): Promise<TResponse> {
+export async function apiPost<TResponse, TPayload>(
+  path: string,
+  payload: TPayload,
+): Promise<TResponse> {
   return apiRequest<TResponse>(path, {
     method: "POST",
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 }
 
 export async function refreshAuthToken() {
   const refreshToken = getRefreshToken();
   if (!refreshToken) throw new Error("Refresh token is missing");
-  const tokens = await apiPost<AuthResponse, { refreshToken: string }>("/auth/refresh", { refreshToken });
+  const tokens = await apiPost<AuthResponse, { refreshToken: string }>(
+    "/auth/refresh",
+    { refreshToken },
+  );
   storeAuthTokens(tokens);
   return tokens.accessToken;
 }
@@ -38,21 +46,30 @@ export async function apiGet<TResponse>(path: string): Promise<TResponse> {
   return apiRequest<TResponse>(path);
 }
 
-export async function apiPut<TResponse, TPayload>(path: string, payload: TPayload): Promise<TResponse> {
+export async function apiPut<TResponse, TPayload>(
+  path: string,
+  payload: TPayload,
+): Promise<TResponse> {
   return apiRequest<TResponse>(path, {
     method: "PUT",
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 }
 
-export async function apiPatch<TResponse, TPayload>(path: string, payload: TPayload): Promise<TResponse> {
+export async function apiPatch<TResponse, TPayload>(
+  path: string,
+  payload: TPayload,
+): Promise<TResponse> {
   return apiRequest<TResponse>(path, {
     method: "PATCH",
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 }
 
-async function apiRequest<TResponse>(path: string, init?: RequestInit): Promise<TResponse> {
+async function apiRequest<TResponse>(
+  path: string,
+  init?: RequestInit,
+): Promise<TResponse> {
   const headers = new Headers(init?.headers);
   headers.set("Content-Type", "application/json");
   const token = getAccessToken();
@@ -60,23 +77,31 @@ async function apiRequest<TResponse>(path: string, init?: RequestInit): Promise<
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
-    headers
+    headers,
   });
 
   const data = await response.json().catch(() => null);
 
-  if (response.status === 401 && getRefreshToken() && !path.includes("/auth/refresh")) {
+  if (
+    response.status === 401 &&
+    getRefreshToken() &&
+    !path.includes("/auth/refresh")
+  ) {
     const nextToken = await refreshAuthToken();
     headers.set("Authorization", `Bearer ${nextToken}`);
     const retry = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
     const retryData = await retry.json().catch(() => null);
     if (retry.ok) return retryData as TResponse;
-    const retryMessage = Array.isArray(retryData?.message) ? retryData.message.join(", ") : retryData?.message;
+    const retryMessage = Array.isArray(retryData?.message)
+      ? retryData.message.join(", ")
+      : retryData?.message;
     throw new Error(retryMessage || "Request failed. Please login again.");
   }
 
   if (!response.ok) {
-    const message = Array.isArray(data?.message) ? data.message.join(", ") : data?.message;
+    const message = Array.isArray(data?.message)
+      ? data.message.join(", ")
+      : data?.message;
     throw new Error(message || "Request failed. Please try again.");
   }
 
