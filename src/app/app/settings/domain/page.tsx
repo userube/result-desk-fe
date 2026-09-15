@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiGet, apiPut } from "@/lib/api";
+import { apiGet, apiPost, apiPut } from "@/lib/api";
 
 type DomainSetting = { portalSubdomain: string; customDomain?: string | null; status: string; dnsInstructions?: { type: string; host: string; value: string; status: string } };
 
@@ -26,6 +26,12 @@ export default function DomainSettingsPage() {
     });
     setSetting(updated);
     setMessage("Domain settings saved.");
+  }
+
+  async function verify() {
+    const updated = await apiPost<DomainSetting, Record<string, never>>("/domains/verify", {});
+    setSetting(updated);
+    setMessage("Domain verification refreshed.");
   }
 
   return (
@@ -51,6 +57,7 @@ export default function DomainSettingsPage() {
               <p><strong>Host:</strong> {setting?.dnsInstructions?.host ?? "portal"}</p>
               <p><strong>Value:</strong> {setting?.dnsInstructions?.value ?? "ewune.app"}</p>
             </div>
+            <Button className="mt-4 w-full" variant="outline" onClick={verify}>Check verification</Button>
           </CardContent>
         </Card>
       </div>

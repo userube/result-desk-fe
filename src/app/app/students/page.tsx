@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,41 @@ export default function StudentsPage() {
     await loadData();
   }
 
+  async function updateStudent(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selected) return;
+    const form = new FormData(event.currentTarget);
+    const updated = await apiPatch<Student, Record<string, string>>(`/students/${selected.id}`, {
+      firstName: String(form.get("firstName") ?? ""),
+      lastName: String(form.get("lastName") ?? ""),
+      admissionNumber: String(form.get("admissionNumber") ?? ""),
+      gender: String(form.get("gender") ?? ""),
+      status: String(form.get("status") ?? "active"),
+      parentName: String(form.get("parentName") ?? ""),
+      parentPhone: String(form.get("parentPhone") ?? ""),
+      parentEmail: String(form.get("parentEmail") ?? "")
+    });
+    setNotice(`${updated.firstName} ${updated.lastName} updated.`);
+    await loadData();
+  }
+
+  async function importCsv(file?: File) {
+    if (!file || !classes[0]) return;
+    const text = await file.text();
+    const rows = text.split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
+    const dataRows = rows[0]?.toLowerCase().includes("first") ? rows.slice(1) : rows;
+    let imported = 0;
+    for (const row of dataRows) {
+      const [firstName, lastName, admissionNumber, gender = "Female", parentName = "", parentPhone = "", parentEmail = "", className = ""] = row.split(",").map((item) => item.trim());
+      if (!firstName || !lastName || !admissionNumber) continue;
+      const klass = classes.find((item) => item.name.toLowerCase() === className.toLowerCase()) ?? classes[0];
+      await apiPost("/students", { firstName, lastName, admissionNumber, gender, parentName, parentPhone, parentEmail, classId: klass.id });
+      imported += 1;
+    }
+    setNotice(`${imported} students imported.`);
+    await loadData();
+  }
+
   return (
     <AppShell>
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
@@ -76,7 +112,13 @@ export default function StudentsPage() {
           <h2 className="mt-2 text-2xl font-bold md:text-3xl">Every result starts with clean student records.</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Records are loaded from the backend and isolated by the logged-in school tenant.</p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row"><Button variant="outline" className="bg-white"><Upload size={16} /> Import CSV</Button><Button><UserPlus size={16} /> Add student</Button></div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <label className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-brand/20 bg-white px-5 text-sm font-semibold text-brand-text hover:bg-brand-soft">
+            <Upload size={16} /> Import CSV
+            <input className="hidden" type="file" accept=".csv,text/csv" onChange={(event) => importCsv(event.target.files?.[0])} />
+          </label>
+          <Button><UserPlus size={16} /> Add student</Button>
+        </div>
       </div>
       {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {notice && <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}
@@ -131,18 +173,40 @@ export default function StudentsPage() {
                 <p className="flex items-center gap-2 rounded-xl bg-white/10 p-3"><FileText size={16} className="text-[#e2dbb5]" /> Weekly notes linked</p>
               </div>
               {selected && (
-                <form className="mt-5 grid gap-2" onSubmit={assignClass}>
-                  <Label className="text-white/80">Assign to class</Label>
-                  <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                    <select className="h-10 rounded-xl border border-white/10 bg-white/10 px-3 text-sm text-white" defaultValue={selected.class?.id} name="classId" required>
-                      {classes.map((klass) => <option className="text-brand-text" value={klass.id} key={klass.id}>{klass.name}</option>)}
-                    </select>
-                    <Button className="bg-white text-brand-dark hover:bg-white/90">Move</Button>
-                  </div>
-                </form>
+                <>
+                  <form className="mt-5 grid gap-2" onSubmit={assignClass}>
+                    <Label className="text-white/80">Assign to class</Label>
+                    <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                      <select className="h-10 rounded-xl border border-white/10 bg-white/10 px-3 text-sm text-white" defaultValue={selected.class?.id} name="classId" required>
+                        {classes.map((klass) => <option className="text-brand-text" value={klass.id} key={klass.id}>{klass.name}</option>)}
+                      </select>
+                      <Button className="bg-white text-brand-dark hover:bg-white/90">Move</Button>
+                    </div>
+                  </form>
+                  <Button asChild className="mt-3 w-full bg-white text-brand-dark hover:bg-white/90" variant="outline"><Link href={`/app/students/${selected.id}`}>Open student history</Link></Button>
+                </>
               )}
             </CardContent>
           </Card>
+
+          {selected && (
+            <Card className="border-slate-200 bg-white shadow-sm">
+              <CardHeader><CardTitle>Edit selected student</CardTitle></CardHeader>
+              <CardContent>
+                <form className="grid gap-3" onSubmit={updateStudent}>
+                  <div className="grid gap-2"><Label>First name</Label><Input name="firstName" defaultValue={selected.firstName} required /></div>
+                  <div className="grid gap-2"><Label>Last name</Label><Input name="lastName" defaultValue={selected.lastName} required /></div>
+                  <div className="grid gap-2"><Label>Admission number</Label><Input name="admissionNumber" defaultValue={selected.admissionNumber} required /></div>
+                  <div className="grid gap-2"><Label>Gender</Label><Input name="gender" defaultValue={selected.gender} required /></div>
+                  <div className="grid gap-2"><Label>Status</Label><Input name="status" defaultValue={selected.status} required /></div>
+                  <div className="grid gap-2"><Label>Guardian name</Label><Input name="parentName" defaultValue={selected.guardian?.name ?? ""} /></div>
+                  <div className="grid gap-2"><Label>Guardian phone</Label><Input name="parentPhone" defaultValue={selected.guardian?.phone ?? ""} /></div>
+                  <div className="grid gap-2"><Label>Guardian email</Label><Input name="parentEmail" defaultValue={selected.guardian?.email ?? ""} type="email" /></div>
+                  <Button>Save changes</Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="border-slate-200 bg-white shadow-sm">
             <CardHeader><CardTitle>Quick add</CardTitle></CardHeader>
