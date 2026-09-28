@@ -90,6 +90,14 @@ export default function ResultsPage() {
     await loadData();
   }
 
+  async function createBatch() {
+    if (!classId) return;
+    const batch = await apiPost<ResultBatch, { classId: string }>("/results", { classId });
+    setMessage("Result batch created.");
+    setClassId(batch.classId);
+    await loadData();
+  }
+
   return (
     <AppShell>
       {message && <p className="mb-4 rounded-xl bg-brand-soft p-3 text-sm font-medium text-brand-dark">{message}</p>}
@@ -134,9 +142,19 @@ export default function ResultsPage() {
               </CardContent>
             </Card>
           )}
+          {!selectedBatch && (
+            <Card>
+              <CardHeader><CardTitle>Start approval workflow</CardTitle></CardHeader>
+              <CardContent className="grid gap-3">
+                <p className="text-sm text-slate-500">Create a result batch for the selected class before requesting approval or generating PDFs.</p>
+                <Button onClick={createBatch}>Create result batch</Button>
+              </CardContent>
+            </Card>
+          )}
           <Card>
             <CardHeader><CardTitle>Result batches</CardTitle></CardHeader>
             <CardContent className="grid gap-3">
+              {selectedBatch && <Button variant="outline" onClick={createBatch}>Create batch for selected class</Button>}
               {batches.map((batch) => <button className="rounded-xl border border-slate-200 p-3 text-left text-sm hover:bg-brand-soft" key={batch.id} onClick={() => setClassId(batch.classId)}><p className="font-semibold">{batch.program?.name ?? "Result batch"}</p><p className="text-slate-500">{batch.status}</p></button>)}
             </CardContent>
           </Card>

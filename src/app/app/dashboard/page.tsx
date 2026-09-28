@@ -31,7 +31,7 @@ export default function DashboardPage() {
     Promise.all([
       apiGet<DashboardData>("/dashboard"),
       apiGet<Program[]>("/programs"),
-      apiGet<Student[]>("/schools/students"),
+      apiGet<Student[]>("/students"),
       apiGet<AuditLog[]>("/audit-logs")
     ])
       .then(([dashboardData, programData, studentData, auditData]) => {

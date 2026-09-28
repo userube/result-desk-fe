@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BarChart3, BookOpenCheck, ClipboardList, Globe2, Home, Layers3, LogOut, Settings, ShieldCheck, UserPlus, Users, type LucideIcon } from "lucide-react";
-import { clearAuthTokens, hasAuthTokens } from "@/lib/api";
+import { BarChart3, BookOpenCheck, ClipboardList, Globe2, Home, Layers3, LogOut, MessageSquareText, Settings, ShieldCheck, UserPlus, Users, type LucideIcon } from "lucide-react";
+import { apiGet, clearAuthTokens, hasAuthTokens } from "@/lib/api";
 
 const items: Array<{ label: string; href: `/app/${string}`; Icon: LucideIcon }> = [
   { label: "Dashboard", href: "/app/dashboard", Icon: Home },
   { label: "Programs", href: "/app/programs", Icon: Layers3 },
   { label: "Classes", href: "/app/classes", Icon: BookOpenCheck },
   { label: "Teachers", href: "/app/teachers", Icon: Users },
+  { label: "Teacher Chat", href: "/app/chat", Icon: MessageSquareText },
   { label: "Weekly Reports", href: "/app/weekly-reports", Icon: ClipboardList },
   { label: "ResultDesk", href: "/app/results", Icon: ShieldCheck },
   { label: "School Portal", href: "/app/settings/domain", Icon: Globe2 },
@@ -19,9 +20,11 @@ const items: Array<{ label: string; href: `/app/${string}`; Icon: LucideIcon }> 
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const [school, setSchool] = useState<{ name: string; slug: string } | null>(null);
 
   useEffect(() => {
     if (!hasAuthTokens()) router.replace("/login");
+    else apiGet<{ school: { name: string; slug: string } }>("/schools/setup-state").then((state) => setSchool(state.school)).catch(() => undefined);
   }, [router]);
 
   function logout() {
@@ -36,7 +39,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="grid size-10 place-items-center rounded-xl bg-brand-dark text-white">E</span>
           <span>
             <span className="block">Ewune</span>
-            <span className="block text-xs font-medium text-slate-500">Greenfield Crest</span>
+            <span className="block text-xs font-medium text-slate-500">{school?.name ?? "School workspace"}</span>
           </span>
         </Link>
         <div className="mt-6 rounded-2xl bg-[#effaf7] p-4">
@@ -64,12 +67,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="border-b border-slate-200 bg-white/90 px-4 py-4 backdrop-blur md:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-brand">Greenfield Crest School</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-brand">{school?.name ?? "School workspace"}</p>
               <h1 className="text-xl font-bold">School workspace</h1>
               <p className="mt-1 hidden text-sm text-slate-500 sm:block">First Term, Holiday Coaching, and ResultDesk approvals in one place.</p>
             </div>
             <div className="hidden items-center gap-3 sm:flex">
-              <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand">greenfield.ewune.app</span>
+              <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand">{school?.slug ? `${school.slug}.ewune.app` : "portal pending"}</span>
               <span className="grid size-10 place-items-center rounded-xl bg-[#effaf7] text-brand"><BarChart3 size={20} /></span>
               <button className="grid size-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" onClick={logout} type="button" aria-label="Log out">
                 <LogOut size={18} />
