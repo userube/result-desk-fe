@@ -9,15 +9,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiGet, apiPut } from "@/lib/api";
-import { school } from "@/lib/demo-data";
 
 type Template = { title: string; showPosition: boolean; showAttendance: boolean; principalName?: string | null; closingNote?: string | null };
+type SetupState = { school: { name: string; address?: string; logoUrl?: string }; currentTerm?: { name: string } | null };
 
 export default function ResultTemplatePage() {
   const [template, setTemplate] = useState<Template>({ title: "Term Result", showPosition: false, showAttendance: true, principalName: "", closingNote: "" });
+  const [setup, setSetup] = useState<SetupState | null>(null);
   const [message, setMessage] = useState("");
 
-  useEffect(() => { apiGet<Template>("/settings/result-template").then(setTemplate); }, []);
+  useEffect(() => {
+    Promise.all([apiGet<Template>("/settings/result-template"), apiGet<SetupState>("/schools/setup-state")]).then(([templateData, setupData]) => {
+      setTemplate(templateData);
+      setSetup(setupData);
+    });
+  }, []);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -62,13 +68,13 @@ export default function ResultTemplatePage() {
           <CardContent>
             <div className="rounded-2xl border border-slate-200 bg-[#fbfcfa] p-5">
               <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-                <div><p className="text-xl font-bold text-brand-dark">{school.name}</p><p className="text-sm text-slate-500">{school.location}</p></div>
-                <span className="grid size-12 place-items-center rounded-xl bg-brand-dark font-bold text-white">G</span>
+                <div><p className="text-xl font-bold text-brand-dark">{setup?.school.name ?? "School name"}</p><p className="text-sm text-slate-500">{setup?.school.address ?? "School address"}</p></div>
+                {setup?.school.logoUrl ? <img alt="School logo" className="size-12 rounded-xl object-cover" src={setup.school.logoUrl} /> : <span className="grid size-12 place-items-center rounded-xl bg-brand-dark font-bold text-white">{setup?.school.name?.[0] ?? "S"}</span>}
               </div>
               <div className="mt-5 grid gap-3 text-sm">
                 <p className="font-bold text-brand-dark">{template.title}</p>
                 <p><strong>Student:</strong> Amina Bello</p>
-                <p><strong>Class:</strong> Primary 1 · <strong>Term:</strong> First Term</p>
+                <p><strong>Class:</strong> Selected class · <strong>Term:</strong> {setup?.currentTerm?.name ?? "Current term"}</p>
                 {template.showAttendance && <p><strong>Attendance:</strong> 58/62 days</p>}
                 {template.showPosition && <p><strong>Position:</strong> 3rd</p>}
                 <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">

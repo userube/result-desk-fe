@@ -188,11 +188,11 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
 
           <Card className="relative mt-6 border-white/10 bg-white/10 text-white shadow-none">
             <CardContent className="p-4">
-              <p className="text-sm text-white/65">Demo school</p>
-              <p className="mt-2 text-lg font-bold">Greenfield Crest School</p>
-              <p className="mt-1 text-sm text-white/65">greenfield.ewune.app</p>
+              <p className="text-sm text-white/65">Your school workspace</p>
+              <p className="mt-2 text-lg font-bold">School profile</p>
+              <p className="mt-1 text-sm text-white/65">your-school.ewune.app</p>
               <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-                {["20 students", "4 teachers", "72% ready"].map((item) => (
+                {["students", "teachers", "results"].map((item) => (
                   <span className="rounded-xl bg-white/10 px-2 py-2.5" key={item}>{item}</span>
                 ))}
               </div>
@@ -218,9 +218,9 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
             <form className="grid gap-4" onSubmit={handleSubmit}>
               {isSignup && (
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field icon={School} label="School name" name="schoolName" placeholder="Greenfield Crest School" required />
-                  <Field icon={MapPin} label="Preferred subdomain" name="preferredSubdomain" prefix="ewune.app/" placeholder="greenfield" required />
-                  <Field icon={Mail} label="Owner email" name="ownerEmail" placeholder="owner@greenfieldcrest.com" type="email" required />
+                  <Field icon={School} label="School name" name="schoolName" placeholder="Your school name" required />
+                  <Field icon={MapPin} label="Preferred subdomain" name="preferredSubdomain" prefix="ewune.app/" placeholder="your-school" required />
+                  <Field icon={Mail} label="Owner email" name="ownerEmail" placeholder="owner@yourschool.com" type="email" required />
                   <Field icon={School} label="Owner first name" name="firstName" placeholder="Ada" required />
                   <Field icon={School} label="Owner last name" name="lastName" placeholder="Okafor" required />
                   <div className="sm:col-span-2">
@@ -239,7 +239,7 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
                 </div>
               )}
 
-              {showEmail && !isSignup && mode !== "invite" && <Field icon={Mail} label="Email address" name="email" placeholder={isLogin ? "owner@greenfieldcrest.test" : "teacher@greenfieldcrest.com"} type="email" required />}
+              {showEmail && !isSignup && mode !== "invite" && <Field icon={Mail} label="Email address" name="email" placeholder={isLogin ? "owner@yourschool.com" : "teacher@yourschool.com"} type="email" required />}
               {mode === "reset" && !resetToken && <Field icon={ShieldCheck} label="Reset token" name="token" placeholder="Paste reset token" required />}
               {showPassword && !isSignup && mode !== "invite" && <Field icon={LockKeyhole} label={mode === "reset" ? "New password" : "Password"} name="password" placeholder="At least 8 characters" type="password" required />}
               {mode === "reset" && <Field icon={ShieldCheck} label="Confirm password" name="confirmPassword" placeholder="Repeat new password" type="password" required />}

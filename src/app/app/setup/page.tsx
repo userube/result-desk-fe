@@ -79,10 +79,13 @@ export default function SetupPage() {
         </Card>
 
         <Card className="border-slate-200 bg-white shadow-sm">
-          <CardHeader><CardTitle>Demo readiness</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Readiness summary</CardTitle></CardHeader>
           <CardContent className="grid gap-3 text-sm text-slate-600">
-            {["Teacher invites configured", "Weekly reports seeded", "Primary 1 result batch waiting", "Audit trail records visible"].map((item) => (
-              <p className="flex items-center gap-2 rounded-xl bg-slate-50 p-3" key={item}><ClipboardList size={16} className="text-brand" /> {item}</p>
+            {config.map(([key, title]) => (
+              <p className="flex items-center gap-2 rounded-xl bg-slate-50 p-3" key={key}>
+                <ClipboardList size={16} className="text-brand" />
+                {title}: {state?.checklist[key] ? "ready" : "needs setup"}
+              </p>
             ))}
           </CardContent>
         </Card>

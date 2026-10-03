@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiGet, apiPatch, apiPost } from "@/lib/api";
+import { apiDelete, apiGet, apiPatch, apiPost } from "@/lib/api";
 import { BookOpenCheck, FileText, Phone, Search, Upload, UserPlus, Users } from "lucide-react";
 
 type Klass = { id: string; name: string };
@@ -42,22 +42,27 @@ export default function StudentsPage() {
 
   async function addStudent(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError("");
     const form = new FormData(event.currentTarget);
-    const student = await apiPost<Student, Record<string, string>>("/students", {
-      firstName: String(form.get("firstName") ?? ""),
-      lastName: String(form.get("lastName") ?? ""),
-      admissionNumber: String(form.get("admissionNumber") ?? ""),
-      classId: String(form.get("classId") ?? classes[0]?.id ?? ""),
-      gender: String(form.get("gender") ?? "Female"),
-      dateOfBirth: String(form.get("dateOfBirth") ?? ""),
-      parentName: String(form.get("parentName") ?? ""),
-      parentPhone: String(form.get("parentPhone") ?? ""),
-      parentEmail: String(form.get("parentEmail") ?? "")
-    });
-    setNotice(`${student.firstName} ${student.lastName} has been added to ${student.class?.name ?? "class"}.`);
-    setSelectedId(student.id);
-    event.currentTarget.reset();
-    await loadData();
+    try {
+      const student = await apiPost<Student, Record<string, string>>("/students", {
+        firstName: String(form.get("firstName") ?? ""),
+        lastName: String(form.get("lastName") ?? ""),
+        admissionNumber: String(form.get("admissionNumber") ?? ""),
+        classId: String(form.get("classId") ?? classes[0]?.id ?? ""),
+        gender: String(form.get("gender") ?? "Female"),
+        dateOfBirth: String(form.get("dateOfBirth") ?? ""),
+        parentName: String(form.get("parentName") ?? ""),
+        parentPhone: String(form.get("parentPhone") ?? ""),
+        parentEmail: String(form.get("parentEmail") ?? "")
+      });
+      setNotice(`${student.firstName} ${student.lastName} has been added to ${student.class?.name ?? "class"}.`);
+      setSelectedId(student.id);
+      event.currentTarget.reset();
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not add student.");
+    }
   }
 
   async function assignClass(event: FormEvent<HTMLFormElement>) {
@@ -85,6 +90,18 @@ export default function StudentsPage() {
     });
     setNotice(`${updated.firstName} ${updated.lastName} updated.`);
     await loadData();
+  }
+
+  async function deactivateStudent() {
+    if (!selected) return;
+    setError("");
+    try {
+      const updated = await apiDelete<Student>(`/students/${selected.id}`);
+      setNotice(`${updated.firstName} ${updated.lastName} marked inactive.`);
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not deactivate student.");
+    }
   }
 
   async function importCsv(file?: File) {
@@ -162,7 +179,7 @@ export default function StudentsPage() {
 
         <div className="grid gap-6">
           <Card className="border-slate-200 bg-[#063d35] text-white shadow-sm">
-            <CardHeader><CardTitle className="text-white">Selected profile</CardTitle><p className="text-sm text-white/70">Live student profile preview.</p></CardHeader>
+            <CardHeader><CardTitle className="text-white">Selected profile</CardTitle><p className="text-sm text-white/70">Student record from the current school.</p></CardHeader>
             <CardContent>
               <div className="grid size-14 place-items-center rounded-2xl bg-white text-xl font-bold text-brand-dark">{selected ? `${selected.firstName[0]}${selected.lastName[0]}` : "--"}</div>
               <h3 className="mt-4 text-2xl font-bold">{selected ? `${selected.firstName} ${selected.lastName}` : "No student yet"}</h3>
@@ -170,7 +187,7 @@ export default function StudentsPage() {
               <div className="mt-5 grid gap-3 text-sm">
                 <p className="flex items-center gap-2 rounded-xl bg-white/10 p-3"><Phone size={16} className="text-[#e2dbb5]" /> {selected?.guardian?.name ?? "No guardian"} · {selected?.guardian?.phone ?? "No phone"}</p>
                 <p className="flex items-center gap-2 rounded-xl bg-white/10 p-3"><BookOpenCheck size={16} className="text-[#e2dbb5]" /> {selected?.scores?.length ?? 0} score records linked</p>
-                <p className="flex items-center gap-2 rounded-xl bg-white/10 p-3"><FileText size={16} className="text-[#e2dbb5]" /> Weekly notes linked</p>
+                <p className="flex items-center gap-2 rounded-xl bg-white/10 p-3"><FileText size={16} className="text-[#e2dbb5]" /> Record status: {selected?.status ?? "none"}</p>
               </div>
               {selected && (
                 <>
@@ -202,7 +219,7 @@ export default function StudentsPage() {
                   <div className="grid gap-2"><Label>Guardian name</Label><Input name="parentName" defaultValue={selected.guardian?.name ?? ""} /></div>
                   <div className="grid gap-2"><Label>Guardian phone</Label><Input name="parentPhone" defaultValue={selected.guardian?.phone ?? ""} /></div>
                   <div className="grid gap-2"><Label>Guardian email</Label><Input name="parentEmail" defaultValue={selected.guardian?.email ?? ""} type="email" /></div>
-                  <Button>Save changes</Button>
+                  <div className="grid gap-2 sm:grid-cols-2"><Button>Save changes</Button><Button type="button" variant="outline" onClick={deactivateStudent}>Mark inactive</Button></div>
                 </form>
               </CardContent>
             </Card>

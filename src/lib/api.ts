@@ -68,6 +68,10 @@ export async function apiPatch<TResponse, TPayload>(
   });
 }
 
+export async function apiDelete<TResponse>(path: string): Promise<TResponse> {
+  return apiRequest<TResponse>(path, { method: "DELETE" });
+}
+
 async function apiRequest<TResponse>(
   path: string,
   init?: RequestInit,

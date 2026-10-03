@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { apiGet, apiPost } from "@/lib/api";
 
 type Klass = { id: string; name: string };
-type Report = { id: string; weekNumber: number; topicsTaught: string; status: string; teacher?: { firstName: string; lastName: string } };
+type Report = { id: string; weekNumber: number; topicsTaught: string; attendanceSummary?: string; status: string; class?: { name: string }; teacher?: { firstName: string; lastName: string } };
 
 export default function WeeklyReportsPage() {
   const [classes, setClasses] = useState<Klass[]>([]);
@@ -72,7 +72,15 @@ export default function WeeklyReportsPage() {
         <Card>
           <CardHeader><CardTitle>Submitted reports</CardTitle></CardHeader>
           <CardContent className="grid gap-3">
-            {reports.map((report) => <div className="rounded-xl border border-slate-200 p-4" key={report.id}><p className="font-semibold">Week {report.weekNumber}</p><p className="mt-1 text-sm text-slate-600">{report.topicsTaught}</p><p className="mt-2 text-xs font-semibold text-brand">{report.status}</p></div>)}
+            {!reports.length && <p className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">No weekly reports submitted yet.</p>}
+            {reports.map((report) => (
+              <div className="rounded-xl border border-slate-200 p-4" key={report.id}>
+                <p className="font-semibold">Week {report.weekNumber} · {report.class?.name ?? "Class"}</p>
+                <p className="mt-1 text-sm text-slate-600">{report.topicsTaught || "No topics recorded"}</p>
+                <p className="mt-1 text-xs text-slate-500">{report.teacher ? `${report.teacher.firstName} ${report.teacher.lastName}` : "Teacher"} · {report.attendanceSummary || "No attendance summary"}</p>
+                <p className="mt-2 text-xs font-semibold text-brand">{report.status}</p>
+              </div>
+            ))}
           </CardContent>
         </Card>
       </div>

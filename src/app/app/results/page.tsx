@@ -13,7 +13,7 @@ type Klass = { id: string; name: string };
 type Subject = { id: string; name: string };
 type Student = { id: string; firstName: string; lastName: string; admissionNumber: string; class?: Klass };
 type Score = { id: string; studentId: string; subjectId: string; caScore: number; examScore: number; total: number; status: string; student?: Student; subject?: Subject };
-type ResultBatch = { id: string; classId: string; status: string; program?: { name: string } | null; generatedResults?: Array<{ pdfUrl?: string }> };
+type ResultBatch = { id: string; classId: string; status: string; class?: Klass; program?: { name: string } | null; approvals?: Array<{ status: string; comment?: string | null; createdAt: string }>; generatedResults?: Array<{ pdfUrl?: string }> };
 
 export default function ResultsPage() {
   const [classes, setClasses] = useState<Klass[]>([]);
@@ -152,10 +152,17 @@ export default function ResultsPage() {
             </Card>
           )}
           <Card>
-            <CardHeader><CardTitle>Result batches</CardTitle></CardHeader>
-            <CardContent className="grid gap-3">
+          <CardHeader><CardTitle>Result batches</CardTitle></CardHeader>
+          <CardContent className="grid gap-3">
               {selectedBatch && <Button variant="outline" onClick={createBatch}>Create batch for selected class</Button>}
-              {batches.map((batch) => <button className="rounded-xl border border-slate-200 p-3 text-left text-sm hover:bg-brand-soft" key={batch.id} onClick={() => setClassId(batch.classId)}><p className="font-semibold">{batch.program?.name ?? "Result batch"}</p><p className="text-slate-500">{batch.status}</p></button>)}
+              {!batches.length && <p className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">No result batches yet. Create one after entering scores for a class.</p>}
+              {batches.map((batch) => (
+                <button className="rounded-xl border border-slate-200 p-3 text-left text-sm hover:bg-brand-soft" key={batch.id} onClick={() => setClassId(batch.classId)}>
+                  <p className="font-semibold">{batch.class?.name ?? "Class batch"}</p>
+                  <p className="text-slate-500">{batch.program?.name ?? "Current term"} · {batch.status}</p>
+                  {batch.approvals?.[0] && <p className="mt-1 text-xs text-slate-500">Latest decision: {batch.approvals[0].status}</p>}
+                </button>
+              ))}
             </CardContent>
           </Card>
         </div>
