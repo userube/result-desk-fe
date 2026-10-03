@@ -44,8 +44,12 @@ export default function StudentsPage() {
     event.preventDefault();
     setError("");
     const form = new FormData(event.currentTarget);
+    if (!classes.length) {
+      setError("Create a class before adding students.");
+      return;
+    }
     try {
-      const student = await apiPost<Student, Record<string, string>>("/students", {
+      const student = await apiPost<Student, Record<string, string>>("/students", compactPayload({
         firstName: String(form.get("firstName") ?? ""),
         lastName: String(form.get("lastName") ?? ""),
         admissionNumber: String(form.get("admissionNumber") ?? ""),
@@ -55,11 +59,11 @@ export default function StudentsPage() {
         parentName: String(form.get("parentName") ?? ""),
         parentPhone: String(form.get("parentPhone") ?? ""),
         parentEmail: String(form.get("parentEmail") ?? "")
-      });
+      }));
       setNotice(`${student.firstName} ${student.lastName} has been added to ${student.class?.name ?? "class"}.`);
       setSelectedId(student.id);
+      setStudents((current) => [student, ...current]);
       event.currentTarget.reset();
-      await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not add student.");
     }
@@ -78,7 +82,7 @@ export default function StudentsPage() {
     event.preventDefault();
     if (!selected) return;
     const form = new FormData(event.currentTarget);
-    const updated = await apiPatch<Student, Record<string, string>>(`/students/${selected.id}`, {
+    const updated = await apiPatch<Student, Record<string, string>>(`/students/${selected.id}`, compactPayload({
       firstName: String(form.get("firstName") ?? ""),
       lastName: String(form.get("lastName") ?? ""),
       admissionNumber: String(form.get("admissionNumber") ?? ""),
@@ -87,9 +91,9 @@ export default function StudentsPage() {
       parentName: String(form.get("parentName") ?? ""),
       parentPhone: String(form.get("parentPhone") ?? ""),
       parentEmail: String(form.get("parentEmail") ?? "")
-    });
+    }));
     setNotice(`${updated.firstName} ${updated.lastName} updated.`);
-    await loadData();
+    setStudents((current) => current.map((student) => student.id === updated.id ? updated : student));
   }
 
   async function deactivateStudent() {
@@ -98,27 +102,10 @@ export default function StudentsPage() {
     try {
       const updated = await apiDelete<Student>(`/students/${selected.id}`);
       setNotice(`${updated.firstName} ${updated.lastName} marked inactive.`);
-      await loadData();
+      setStudents((current) => current.map((student) => student.id === updated.id ? updated : student));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not deactivate student.");
     }
-  }
-
-  async function importCsv(file?: File) {
-    if (!file || !classes[0]) return;
-    const text = await file.text();
-    const rows = text.split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
-    const dataRows = rows[0]?.toLowerCase().includes("first") ? rows.slice(1) : rows;
-    let imported = 0;
-    for (const row of dataRows) {
-      const [firstName, lastName, admissionNumber, gender = "Female", parentName = "", parentPhone = "", parentEmail = "", className = ""] = row.split(",").map((item) => item.trim());
-      if (!firstName || !lastName || !admissionNumber) continue;
-      const klass = classes.find((item) => item.name.toLowerCase() === className.toLowerCase()) ?? classes[0];
-      await apiPost("/students", { firstName, lastName, admissionNumber, gender, parentName, parentPhone, parentEmail, classId: klass.id });
-      imported += 1;
-    }
-    setNotice(`${imported} students imported.`);
-    await loadData();
   }
 
   return (
@@ -130,11 +117,12 @@ export default function StudentsPage() {
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Records are loaded from the backend and isolated by the logged-in school tenant.</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <label className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-brand/20 bg-white px-5 text-sm font-semibold text-brand-text hover:bg-brand-soft">
-            <Upload size={16} /> Import CSV
-            <input className="hidden" type="file" accept=".csv,text/csv" onChange={(event) => importCsv(event.target.files?.[0])} />
-          </label>
-          <Button><UserPlus size={16} /> Add student</Button>
+          <Button asChild variant="outline" className="bg-white">
+            <Link href="/app/students/import"><Upload size={16} /> Import students</Link>
+          </Button>
+          <Button asChild>
+            <a href="#quick-add-student"><UserPlus size={16} /> Add student</a>
+          </Button>
         </div>
       </div>
       {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
@@ -225,7 +213,7 @@ export default function StudentsPage() {
             </Card>
           )}
 
-          <Card className="border-slate-200 bg-white shadow-sm">
+          <Card className="border-slate-200 bg-white shadow-sm" id="quick-add-student">
             <CardHeader><CardTitle>Quick add</CardTitle></CardHeader>
             <CardContent>
               <form className="grid gap-3" onSubmit={addStudent}>
@@ -242,14 +230,15 @@ export default function StudentsPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label>Class</Label>
-                  <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm" name="classId" required>
+                  <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm" name="classId" required disabled={!classes.length}>
                     {classes.map((klass) => <option value={klass.id} key={klass.id}>{klass.name}</option>)}
                   </select>
                 </div>
                 <div className="grid gap-2"><Label>Guardian name</Label><Input name="parentName" /></div>
                 <div className="grid gap-2"><Label>Guardian phone</Label><Input name="parentPhone" /></div>
                 <div className="grid gap-2"><Label>Guardian email</Label><Input name="parentEmail" type="email" /></div>
-                <Button>Add student record</Button>
+                {!classes.length && <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">Create a class before adding students.</p>}
+                <Button disabled={!classes.length}>Add student record</Button>
               </form>
             </CardContent>
           </Card>
@@ -257,6 +246,10 @@ export default function StudentsPage() {
       </div>
     </AppShell>
   );
+}
+
+function compactPayload(values: Record<string, string>) {
+  return Object.fromEntries(Object.entries(values).filter(([, value]) => value.trim() !== ""));
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
