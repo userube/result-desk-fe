@@ -14,6 +14,7 @@ type Subject = { id: string; name: string };
 type Student = { id: string; firstName: string; lastName: string; admissionNumber: string; class?: Klass };
 type Score = { id: string; studentId: string; subjectId: string; caScore: number; examScore: number; total: number; status: string; student?: Student; subject?: Subject };
 type ResultBatch = { id: string; classId: string; status: string; class?: Klass; program?: { name: string } | null; approvals?: Array<{ status: string; comment?: string | null; createdAt: string }>; generatedResults?: Array<{ pdfUrl?: string }> };
+type TeacherMe = { roles: Array<{ role: string }>; classes: Array<{ class: Klass }>; subjects: Array<{ subject: Subject }> };
 
 export default function ResultsPage() {
   const [classes, setClasses] = useState<Klass[]>([]);
@@ -33,13 +34,17 @@ export default function ResultsPage() {
       apiGet<Score[]>("/scores"),
       apiGet<ResultBatch[]>("/results")
     ]);
-    setClasses(classData);
-    setSubjects(subjectData);
+    const meData = await apiGet<TeacherMe>("/teachers/me").catch(() => null);
+    const isAdmin = meData?.roles.some((item) => ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"].includes(item.role)) ?? true;
+    const visibleClasses = isAdmin ? classData : (meData?.classes.map((item) => item.class) ?? []);
+    const visibleSubjects = isAdmin ? subjectData : (meData?.subjects.map((item) => item.subject) ?? []);
+    setClasses(visibleClasses);
+    setSubjects(visibleSubjects);
     setStudents(studentData);
     setScores(scoreData);
     setBatches(batchData);
-    setClassId((current) => current || classData[0]?.id || "");
-    setSubjectId((current) => current || subjectData[0]?.id || "");
+    setClassId((current) => current || visibleClasses[0]?.id || "");
+    setSubjectId((current) => current || visibleSubjects[0]?.id || "");
   }
 
   useEffect(() => { loadData(); }, []);

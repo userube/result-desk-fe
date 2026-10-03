@@ -137,3 +137,29 @@ export function clearAuthTokens() {
 export function hasAuthTokens() {
   return Boolean(getAccessToken() && getRefreshToken());
 }
+
+export type AuthUser = {
+  sub: string;
+  schoolId: string;
+  roles: string[];
+};
+
+export function getAuthUser(): AuthUser | null {
+  const token = getAccessToken();
+  if (!token) return null;
+  try {
+    const payload = token.split(".")[1];
+    const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    return {
+      sub: String(decoded.sub ?? ""),
+      schoolId: String(decoded.schoolId ?? ""),
+      roles: Array.isArray(decoded.roles) ? decoded.roles.map(String) : []
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function hasAnyRole(roles: string[], allowed: string[]) {
+  return roles.includes("PLATFORM_SUPER_ADMIN") || allowed.some((role) => roles.includes(role));
+}

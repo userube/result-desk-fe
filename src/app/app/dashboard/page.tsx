@@ -15,6 +15,11 @@ type Student = { id: string; firstName: string; lastName: string; admissionNumbe
 type AuditLog = { id: string; action: string; entityType: string; createdAt: string };
 type Score = { id: string; status: string; total: number; student?: Student; subject?: { name: string } };
 type SetupState = { school: { name: string; slug: string } };
+type TeacherMe = {
+  roles: Array<{ role: string }>;
+  classes: Array<{ id: string; class: { id: string; name: string; students?: unknown[] } }>;
+  subjects: Array<{ id: string; subject: { id: string; name: string } }>;
+};
 
 const quickActions = [
   { label: "Invite teacher", Icon: UserPlus, href: "/app/teachers" },
@@ -29,6 +34,7 @@ export default function DashboardPage() {
   const [scores, setScores] = useState<Score[]>([]);
   const [activity, setActivity] = useState<AuditLog[]>([]);
   const [setup, setSetup] = useState<SetupState | null>(null);
+  const [teacherMe, setTeacherMe] = useState<TeacherMe | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -47,6 +53,7 @@ export default function DashboardPage() {
         setSetup(setupData);
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Unable to load dashboard data."));
+    apiGet<TeacherMe>("/teachers/me").then(setTeacherMe).catch(() => undefined);
   }, []);
 
   const metrics = useMemo(() => [
@@ -79,6 +86,25 @@ export default function DashboardPage() {
       </div>
 
       {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p>}
+
+      {teacherMe && !teacherMe.roles.some((item) => ["SCHOOL_OWNER", "SCHOOL_ADMIN"].includes(item.role)) && (
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <Card className="border-slate-200 bg-white shadow-sm">
+            <CardHeader><CardTitle>My classes</CardTitle></CardHeader>
+            <CardContent className="grid gap-3">
+              {!teacherMe.classes.length && <p className="text-sm text-slate-500">No class assignment yet.</p>}
+              {teacherMe.classes.map((item) => <p className="rounded-xl bg-slate-50 p-4 text-sm" key={item.id}>{item.class.name} · {item.class.students?.length ?? 0} students</p>)}
+            </CardContent>
+          </Card>
+          <Card className="border-slate-200 bg-white shadow-sm">
+            <CardHeader><CardTitle>My subjects</CardTitle></CardHeader>
+            <CardContent className="grid gap-3">
+              {!teacherMe.subjects.length && <p className="text-sm text-slate-500">No subject assignment yet.</p>}
+              {teacherMe.subjects.map((item) => <p className="rounded-xl bg-slate-50 p-4 text-sm" key={item.id}>{item.subject.name}</p>)}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map(({ label, value, helper, tone, icon: Icon }) => (

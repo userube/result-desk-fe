@@ -11,14 +11,22 @@ import { apiGet, apiPost } from "@/lib/api";
 
 type Klass = { id: string; name: string };
 type Report = { id: string; weekNumber: number; topicsTaught: string; attendanceSummary?: string; status: string; class?: { name: string }; teacher?: { firstName: string; lastName: string } };
+type TeacherMe = { roles: Array<{ role: string }>; classes: Array<{ class: Klass }> };
 
 export default function WeeklyReportsPage() {
   const [classes, setClasses] = useState<Klass[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
+  const [teacherMe, setTeacherMe] = useState<TeacherMe | null>(null);
 
   async function loadData() {
-    const [classData, reportData] = await Promise.all([apiGet<Klass[]>("/schools/classes"), apiGet<Report[]>("/weekly-reports")]);
-    setClasses(classData);
+    const [classData, reportData, meData] = await Promise.all([
+      apiGet<Klass[]>("/schools/classes"),
+      apiGet<Report[]>("/weekly-reports"),
+      apiGet<TeacherMe>("/teachers/me").catch(() => null)
+    ]);
+    setTeacherMe(meData);
+    const isAdmin = meData?.roles.some((item) => ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"].includes(item.role)) ?? true;
+    setClasses(isAdmin ? classData : (meData?.classes.map((item) => item.class) ?? []));
     setReports(reportData);
   }
 

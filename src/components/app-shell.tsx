@@ -4,27 +4,31 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart3, BookOpenCheck, ClipboardList, Globe2, Home, Layers3, LogOut, MessageSquareText, Settings, ShieldCheck, UserPlus, Users, type LucideIcon } from "lucide-react";
-import { apiGet, clearAuthTokens, hasAuthTokens } from "@/lib/api";
+import { apiGet, clearAuthTokens, getAuthUser, hasAnyRole, hasAuthTokens } from "@/lib/api";
 
-const items: Array<{ label: string; href: `/app/${string}`; Icon: LucideIcon }> = [
+const items: Array<{ label: string; href: `/app/${string}`; Icon: LucideIcon; roles?: string[] }> = [
   { label: "Dashboard", href: "/app/dashboard", Icon: Home },
-  { label: "Programs", href: "/app/programs", Icon: Layers3 },
-  { label: "Classes", href: "/app/classes", Icon: BookOpenCheck },
-  { label: "Teachers", href: "/app/teachers", Icon: Users },
+  { label: "Programs", href: "/app/programs", Icon: Layers3, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"] },
+  { label: "Classes", href: "/app/classes", Icon: BookOpenCheck, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"] },
+  { label: "Teachers", href: "/app/teachers", Icon: Users, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN"] },
   { label: "Teacher Chat", href: "/app/chat", Icon: MessageSquareText },
   { label: "Weekly Reports", href: "/app/weekly-reports", Icon: ClipboardList },
   { label: "ResultDesk", href: "/app/results", Icon: ShieldCheck },
-  { label: "School Portal", href: "/app/settings/domain", Icon: Globe2 },
-  { label: "Settings", href: "/app/settings/school", Icon: Settings }
+  { label: "School Portal", href: "/app/settings/domain", Icon: Globe2, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN"] },
+  { label: "Settings", href: "/app/settings/school", Icon: Settings, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN"] }
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [setup, setSetup] = useState<{ school: { name: string; slug: string; logoUrl?: string }; checklist?: Record<string, boolean> } | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
 
   useEffect(() => {
     if (!hasAuthTokens()) router.replace("/login");
-    else apiGet<{ school: { name: string; slug: string; logoUrl?: string }; checklist?: Record<string, boolean> }>("/schools/setup-state").then(setSetup).catch(() => undefined);
+    else {
+      setRoles(getAuthUser()?.roles ?? []);
+      apiGet<{ school: { name: string; slug: string; logoUrl?: string }; checklist?: Record<string, boolean> }>("/schools/setup-state").then(setSetup).catch(() => undefined);
+    }
   }, [router]);
 
   function logout() {
@@ -35,6 +39,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const school = setup?.school;
   const checklist = Object.values(setup?.checklist ?? {});
   const setupPercent = checklist.length ? Math.round((checklist.filter(Boolean).length / checklist.length) * 100) : 0;
+  const visibleItems = items.filter((item) => !item.roles || hasAnyRole(roles, item.roles));
 
   return (
     <div className="min-h-screen bg-[#f5f7f4] pb-20 text-brand-text md:pb-0">
@@ -53,7 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <p className="mt-3 text-xs leading-5 text-slate-600">Complete classes, subjects, teachers, students, grading, and programs.</p>
         </div>
         <nav className="mt-6 grid gap-1">
-          {items.map(({ label, href, Icon }) => (
+          {visibleItems.map(({ label, href, Icon }) => (
             <Link className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-brand-soft hover:text-brand-dark" href={href} key={href}>
               <Icon size={18} /> {label}
             </Link>
@@ -87,7 +92,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="p-4 md:p-8">{children}</main>
       </div>
       <nav className="fixed bottom-0 left-0 right-0 grid grid-cols-5 border-t border-slate-200 bg-white md:hidden">
-        {items.slice(0, 5).map(({ label, href, Icon }) => (
+        {visibleItems.slice(0, 5).map(({ label, href, Icon }) => (
           <Link className="flex flex-col items-center gap-1 px-1 py-2 text-[11px]" href={href} key={href}>
             <Icon size={18} /> {label}
           </Link>
