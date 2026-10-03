@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiGet, apiPatch, apiPost } from "@/lib/api";
+import { getAuthUser, hasAnyRole, apiGet, apiPatch, apiPost } from "@/lib/api";
 
 type Klass = { id: string; name: string };
 type Subject = { id: string; name: string };
@@ -25,6 +25,8 @@ export default function ResultsPage() {
   const [classId, setClassId] = useState("");
   const [subjectId, setSubjectId] = useState("");
   const [message, setMessage] = useState("");
+  const roles = getAuthUser()?.roles ?? [];
+  const canApprove = hasAnyRole(roles, ["SCHOOL_OWNER", "HEAD_TEACHER"]);
 
   async function loadData() {
     const [classData, subjectData, studentData, scoreData, batchData] = await Promise.all([
@@ -50,7 +52,7 @@ export default function ResultsPage() {
   useEffect(() => { loadData(); }, []);
 
   const visibleStudents = useMemo(() => students.filter((student) => student.class?.id === classId), [students, classId]);
-  const selectedBatch = batches.find((batch) => batch.classId === classId) ?? batches[0];
+  const selectedBatch = batches.find((batch) => batch.classId === classId);
 
   function findScore(studentId: string) {
     return scores.find((score) => score.studentId === studentId && score.subjectId === subjectId);
@@ -99,6 +101,7 @@ export default function ResultsPage() {
     if (!classId) return;
     const batch = await apiPost<ResultBatch, { classId: string }>("/results", { classId });
     setMessage("Result batch created.");
+    setBatches((current) => [batch, ...current.filter((item) => item.id !== batch.id)]);
     setClassId(batch.classId);
     await loadData();
   }
@@ -120,6 +123,8 @@ export default function ResultsPage() {
             </div>
           </CardHeader>
           <CardContent className="grid gap-3">
+            {!subjects.length && <p className="rounded-md border border-dashed border-slate-300 p-4 text-sm text-slate-500">Add subjects before score entry.</p>}
+            {subjects.length > 0 && !visibleStudents.length && <p className="rounded-md border border-dashed border-slate-300 p-4 text-sm text-slate-500">No students found for the selected class.</p>}
             {visibleStudents.map((student) => {
               const score = findScore(student.id);
               return (
@@ -141,7 +146,8 @@ export default function ResultsPage() {
               <CardContent className="grid gap-3">
                 <Badge>{selectedBatch.status}</Badge>
                 <Button variant="outline" onClick={() => requestApproval(selectedBatch.id)}>Request approval</Button>
-                <div className="grid gap-2 sm:grid-cols-2"><Button onClick={() => approve(selectedBatch.id, "approved")}>Approve</Button><Button variant="outline" onClick={() => approve(selectedBatch.id, "rejected")}>Reject</Button></div>
+                {canApprove && <div className="grid gap-2 sm:grid-cols-2"><Button onClick={() => approve(selectedBatch.id, "approved")}>Approve</Button><Button variant="outline" onClick={() => approve(selectedBatch.id, "rejected")}>Reject</Button></div>}
+                {!canApprove && <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-500">Only the school owner or head teacher can approve or reject results.</p>}
                 <Button onClick={() => generateBatch(selectedBatch.id)}>Generate class PDF</Button>
                 {selectedBatch.generatedResults?.map((result, index) => result.pdfUrl && <a className="text-sm font-semibold text-brand" href={`${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001"}${result.pdfUrl}`} key={index}>Download generated PDF</a>)}
               </CardContent>

@@ -61,6 +61,17 @@ export default function TeacherChatPage() {
     await loadRooms();
   }
 
+  async function startDirectChat(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    const form = new FormData(event.currentTarget);
+    const room = await apiPost<ChatRoom, { email: string }>("/chat/direct", { email: String(form.get("email") ?? "") });
+    setNotice(`Direct chat ready: ${room.name}`);
+    setSelectedRoomId(room.id);
+    event.currentTarget.reset();
+    await loadRooms();
+  }
+
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedRoomId) return;
@@ -87,6 +98,16 @@ export default function TeacherChatPage() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[360px_1fr]">
         <div className="grid gap-6">
+          <Card>
+            <CardHeader><CardTitle>Message a teacher</CardTitle></CardHeader>
+            <CardContent>
+              <form className="grid gap-4" onSubmit={startDirectChat}>
+                <div className="grid gap-2"><Label>Teacher email</Label><Input name="email" placeholder="teacher@yourschool.com" type="email" required /></div>
+                <Button><MessageSquareText size={16} /> Start direct chat</Button>
+              </form>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader><CardTitle>Create group</CardTitle></CardHeader>
             <CardContent>

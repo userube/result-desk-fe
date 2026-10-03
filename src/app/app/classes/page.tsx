@@ -10,20 +10,24 @@ import { apiDelete, apiGet, apiPatch, apiPost } from "@/lib/api";
 
 type Klass = { id: string; name: string; students?: unknown[]; teacherAssignments?: unknown[]; program?: { name: string } | null };
 type Program = { id: string; name: string };
+type Subject = { id: string; name: string; teacherAssignments?: unknown[]; scoreEntries?: unknown[] };
 
 export default function ClassesPage() {
   const [classes, setClasses] = useState<Klass[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   async function loadClasses() {
-    const [classData, programData] = await Promise.all([
+    const [classData, programData, subjectData] = await Promise.all([
       apiGet<Klass[]>("/schools/classes"),
-      apiGet<Program[]>("/programs")
+      apiGet<Program[]>("/programs"),
+      apiGet<Subject[]>("/schools/subjects")
     ]);
     setClasses(classData);
     setPrograms(programData);
+    setSubjects(subjectData);
   }
 
   useEffect(() => { loadClasses().catch((err) => setError(err.message)); }, []);
@@ -64,6 +68,36 @@ export default function ClassesPage() {
     }
   }
 
+  async function addSubject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    const form = new FormData(event.currentTarget);
+    const subject = await apiPost<Subject, { name: string }>("/schools/subjects", { name: String(form.get("name") ?? "") });
+    setSubjects((current) => [...current, subject].sort((a, b) => a.name.localeCompare(b.name)));
+    setMessage("Subject added.");
+    event.currentTarget.reset();
+  }
+
+  async function updateSubject(event: FormEvent<HTMLFormElement>, subjectId: string) {
+    event.preventDefault();
+    setError("");
+    const form = new FormData(event.currentTarget);
+    const subject = await apiPatch<Subject, { name: string }>(`/schools/subjects/${subjectId}`, { name: String(form.get("name") ?? "") });
+    setSubjects((current) => current.map((item) => item.id === subject.id ? subject : item).sort((a, b) => a.name.localeCompare(b.name)));
+    setMessage("Subject updated.");
+  }
+
+  async function deleteSubject(subjectId: string) {
+    setError("");
+    try {
+      await apiDelete(`/schools/subjects/${subjectId}`);
+      setSubjects((current) => current.filter((item) => item.id !== subjectId));
+      setMessage("Subject deleted.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete subject.");
+    }
+  }
+
   return (
     <AppShell>
       {message && <p className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{message}</p>}
@@ -99,6 +133,30 @@ export default function ClassesPage() {
                 <Button variant="outline">Save</Button>
                 <Button type="button" variant="outline" onClick={() => deleteClass(klass.id)}>Delete</Button>
                 <p className="text-sm text-slate-500 md:col-span-4">{klass.students?.length ?? 0} students · {klass.teacherAssignments?.length ?? 0} teacher assignments</p>
+              </form>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[320px_1fr]">
+        <Card>
+          <CardHeader><CardTitle>Add subject</CardTitle></CardHeader>
+          <CardContent>
+            <form className="grid gap-3" onSubmit={addSubject}>
+              <div className="grid gap-2"><Label>Subject name</Label><Input name="name" placeholder="Subject name" required /></div>
+              <Button>Add subject</Button>
+            </form>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Subjects</CardTitle></CardHeader>
+          <CardContent className="grid gap-3">
+            {!subjects.length && <p className="rounded-md border border-dashed border-slate-300 p-4 text-sm text-slate-500">No subjects yet. Add subjects before score entry.</p>}
+            {subjects.map((subject) => (
+              <form className="grid gap-3 rounded-md border border-slate-200 p-4 md:grid-cols-[1fr_auto_auto]" key={subject.id} onSubmit={(event) => updateSubject(event, subject.id)}>
+                <Input name="name" defaultValue={subject.name} required />
+                <Button variant="outline">Save</Button>
+                <Button type="button" variant="outline" onClick={() => deleteSubject(subject.id)}>Delete</Button>
               </form>
             ))}
           </CardContent>
