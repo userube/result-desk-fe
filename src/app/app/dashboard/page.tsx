@@ -6,7 +6,7 @@ import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { apiGet } from "@/lib/api";
+import { apiGet, getAuthUser, hasAnyRole } from "@/lib/api";
 import { ArrowUpRight, CheckCircle2, ClipboardList, FileText, GraduationCap, Search, UserPlus, Users } from "lucide-react";
 
 type DashboardData = { students: number; teachers: number; classes: number; pendingScores: number; weeklyReports: number };
@@ -36,6 +36,8 @@ export default function DashboardPage() {
   const [setup, setSetup] = useState<SetupState | null>(null);
   const [teacherMe, setTeacherMe] = useState<TeacherMe | null>(null);
   const [error, setError] = useState("");
+  const roles = getAuthUser()?.roles ?? [];
+  const isOwnerWorkspace = hasAnyRole(roles, ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"]);
 
   useEffect(() => {
     Promise.all([
@@ -76,13 +78,13 @@ export default function DashboardPage() {
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-brand">{setup?.school.slug ? `${setup.school.slug}.ewune.app` : "School workspace"}</p>
-          <h2 className="mt-2 text-2xl font-bold md:text-3xl">{setup?.school.name ?? "School dashboard"}</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Live data from the backend: programs, submissions, students, and audit activity.</p>
+          <h2 className="mt-2 text-2xl font-bold md:text-3xl">{isOwnerWorkspace ? `${setup?.school.name ?? "School"} owner dashboard` : "Teacher workspace"}</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{isOwnerWorkspace ? "Live owner view for setup, submissions, students, approvals, and audit activity." : "Your assigned classes, subjects, weekly reports, and score entry shortcuts."}</p>
         </div>
-        <div className="flex gap-2">
+        {isOwnerWorkspace && <div className="flex gap-2">
           <Button variant="outline" className="bg-white"><Search size={16} /> Search</Button>
           <Button><FileText size={16} /> Generate PDFs</Button>
-        </div>
+        </div>}
       </div>
 
       {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p>}

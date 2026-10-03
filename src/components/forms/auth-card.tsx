@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiPost, AuthResponse, LoginPayload, SignupPayload, storeAuthTokens } from "@/lib/api";
+import { apiPost, AuthResponse, getAuthUser, hasAnyRole, LoginPayload, SignupPayload, storeAuthTokens } from "@/lib/api";
 
 type AuthMode = "login" | "signup" | "invite" | "forgot" | "reset";
 
@@ -112,7 +112,7 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
         };
         const tokens = await apiPost<AuthResponse, LoginPayload>("/auth/login", payload);
         storeAuthTokens(tokens);
-        router.push("/app/dashboard");
+        router.push(defaultWorkspacePath());
         return;
       }
 
@@ -124,7 +124,7 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
         await apiPost<{ email: string }, { token: string; firstName: string; lastName: string; password: string }>("/invitations/accept", { token, firstName, lastName, password });
         const tokens = await apiPost<AuthResponse, LoginPayload>("/auth/login", { email: getFormValue(form, "email"), password });
         storeAuthTokens(tokens);
-        router.push("/app/dashboard");
+        router.push(defaultWorkspacePath());
         return;
       }
 
@@ -273,6 +273,12 @@ export function AuthCard({ mode }: { title?: string; mode: AuthMode }) {
       </div>
     </main>
   );
+}
+
+function defaultWorkspacePath() {
+  const roles = getAuthUser()?.roles ?? [];
+  if (hasAnyRole(roles, ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"])) return "/app/dashboard";
+  return "/app/weekly-reports";
 }
 
 function Field({

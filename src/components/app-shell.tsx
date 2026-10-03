@@ -10,6 +10,7 @@ const items: Array<{ label: string; href: `/app/${string}`; Icon: LucideIcon; ro
   { label: "Dashboard", href: "/app/dashboard", Icon: Home },
   { label: "Programs", href: "/app/programs", Icon: Layers3, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"] },
   { label: "Classes", href: "/app/classes", Icon: BookOpenCheck, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"] },
+  { label: "Students", href: "/app/students", Icon: Users, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"] },
   { label: "Teachers", href: "/app/teachers", Icon: Users, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN"] },
   { label: "Teacher Chat", href: "/app/chat", Icon: MessageSquareText },
   { label: "Weekly Reports", href: "/app/weekly-reports", Icon: ClipboardList },
@@ -64,13 +65,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           ))}
         </nav>
-        <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-slate-200 p-4">
+        {hasAnyRole(roles, ["SCHOOL_OWNER", "SCHOOL_ADMIN"]) && <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-slate-200 p-4">
           <p className="text-sm font-semibold">Invite teachers</p>
           <p className="mt-1 text-xs leading-5 text-slate-500">Bring score entry closer to the classroom.</p>
           <Link className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-brand" href="/app/teachers">
             <UserPlus size={15} /> Send invite
           </Link>
-        </div>
+        </div>}
       </aside>
       <div className="md:pl-72">
         <header className="border-b border-slate-200 bg-white/90 px-4 py-4 backdrop-blur md:px-8">
