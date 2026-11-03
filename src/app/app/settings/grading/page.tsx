@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { apiGet, apiPut } from "@/lib/api";
 
 type GradeBand = { id?: string; grade: string; minScore: number; maxScore: number; remark: string };
+type Component = { id?: string; name: string; maxScore: number };
 
 const defaults: GradeBand[] = [
   { grade: "A", minScore: 80, maxScore: 100, remark: "Excellent" },
@@ -22,9 +23,12 @@ const defaults: GradeBand[] = [
 export default function GradingSettingsPage() {
   const [bands, setBands] = useState<GradeBand[]>(defaults);
   const [message, setMessage] = useState("");
+  const [components, setComponents] = useState<Component[]>([{ name: "CA", maxScore: 40 }, { name: "Exam", maxScore: 60 }]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     apiGet<GradeBand[]>("/settings/grading").then((data) => { if (data.length) setBands(data); });
+    apiGet<Component[]>("/settings/assessments").then((data) => { if (data.length) setComponents(data); }).catch((err) => setError(err.message));
   }, []);
 
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -40,6 +44,17 @@ export default function GradingSettingsPage() {
     setMessage("Grading scale saved.");
   }
 
+  async function saveComponents(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const items = components.map((_, index) => ({ name: String(form.get(`component-name-${index}`) ?? ""), maxScore: Number(form.get(`component-max-${index}`) ?? 0) }));
+    try {
+      setComponents(await apiPut<Component[], { items: Component[] }>("/settings/assessments", { items }));
+      setMessage("Assessment components saved.");
+      setError("");
+    } catch (err) { setError(err instanceof Error ? err.message : "Could not save assessments"); }
+  }
+
   return (
     <AppShell>
       <div className="mb-6">
@@ -47,6 +62,21 @@ export default function GradingSettingsPage() {
         <h2 className="mt-2 text-2xl font-bold md:text-3xl">Grading scale</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Configure how Ewune converts totals into grades and comments.</p>
       </div>
+      {error && <p className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      <Card className="mb-6 border-slate-200 bg-white shadow-sm">
+        <CardHeader><CardTitle>Assessment components</CardTitle></CardHeader>
+        <CardContent>
+          <form className="grid gap-3" onSubmit={saveComponents}>
+            {components.map((component, index) => <div className="grid gap-3 sm:grid-cols-[1fr_130px_auto]" key={index}>
+              <div className="grid gap-1"><Label>Name</Label><Input name={`component-name-${index}`} defaultValue={component.name} required /></div>
+              <div className="grid gap-1"><Label>Maximum marks</Label><Input name={`component-max-${index}`} type="number" min={1} max={100} defaultValue={component.maxScore} required /></div>
+              <Button type="button" variant="outline" className="self-end" onClick={() => setComponents(components.filter((_, itemIndex) => itemIndex !== index))}>Remove</Button>
+            </div>)}
+            <p className="text-sm text-slate-500">Maximum marks must total 100.</p>
+            <div className="flex gap-3"><Button type="button" variant="outline" onClick={() => setComponents([...components, { name: "", maxScore: 0 }])}>Add component</Button><Button>Save assessments</Button></div>
+          </form>
+        </CardContent>
+      </Card>
 
       <Card className="border-slate-200 bg-white shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Grade bands</CardTitle><Badge>Persisted</Badge></CardHeader>

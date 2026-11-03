@@ -12,8 +12,10 @@ import { getAuthUser, hasAnyRole, apiGet, apiPatch, apiPost } from "@/lib/api";
 type Klass = { id: string; name: string };
 type Subject = { id: string; name: string };
 type Student = { id: string; firstName: string; lastName: string; admissionNumber: string; class?: Klass };
-type Score = { id: string; studentId: string; subjectId: string; caScore: number; examScore: number; total: number; status: string; student?: Student; subject?: Subject };
-type ResultBatch = { id: string; classId: string; status: string; class?: Klass; program?: { name: string } | null; approvals?: Array<{ status: string; comment?: string | null; createdAt: string }>; generatedResults?: Array<{ pdfUrl?: string }> };
+type Score = { id: string; studentId: string; subjectId: string; termId?: string; caScore: number; examScore: number; componentScores?: Record<string, number>; teacherRemark?: string; principalRemark?: string; attendancePresent?: number; attendanceTotal?: number; total: number; status: string; student?: Student; subject?: Subject };
+type ResultBatch = { id: string; classId: string; termId: string; status: string; class?: Klass; program?: { name: string } | null; approvals?: Array<{ status: string; comment?: string | null; createdAt: string }>; generatedResults?: Array<{ pdfUrl?: string }> };
+type Term = { id: string; name: string; isCurrent: boolean; academicSession?: { name: string } };
+type Component = { id: string; name: string; maxScore: number };
 type TeacherMe = { roles: Array<{ role: string }>; classes: Array<{ class: Klass }>; subjects: Array<{ subject: Subject }> };
 
 export default function ResultsPage() {
@@ -22,6 +24,10 @@ export default function ResultsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [scores, setScores] = useState<Score[]>([]);
   const [batches, setBatches] = useState<ResultBatch[]>([]);
+  const [terms, setTerms] = useState<Term[]>([]);
+  const [components, setComponents] = useState<Component[]>([]);
+  const [termId, setTermId] = useState("");
+  const [error, setError] = useState("");
   const [classId, setClassId] = useState("");
   const [subjectId, setSubjectId] = useState("");
   const [message, setMessage] = useState("");
@@ -29,12 +35,14 @@ export default function ResultsPage() {
   const canApprove = hasAnyRole(roles, ["SCHOOL_OWNER", "HEAD_TEACHER"]);
 
   async function loadData() {
-    const [classData, subjectData, studentData, scoreData, batchData] = await Promise.all([
+    const [classData, subjectData, studentData, scoreData, batchData, termData, componentData] = await Promise.all([
       apiGet<Klass[]>("/schools/classes"),
       apiGet<Subject[]>("/schools/subjects"),
       apiGet<Student[]>("/students"),
       apiGet<Score[]>("/scores"),
-      apiGet<ResultBatch[]>("/results")
+      apiGet<ResultBatch[]>("/results"),
+      apiGet<Term[]>("/terms"),
+      apiGet<Component[]>("/settings/assessments")
     ]);
     const meData = await apiGet<TeacherMe>("/teachers/me").catch(() => null);
     const isAdmin = meData?.roles.some((item) => ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"].includes(item.role)) ?? true;
@@ -45,27 +53,35 @@ export default function ResultsPage() {
     setStudents(studentData);
     setScores(scoreData);
     setBatches(batchData);
+    setTerms(termData);
+    setComponents(componentData);
+    setTermId((current) => current || termData.find((item) => item.isCurrent)?.id || termData[0]?.id || "");
     setClassId((current) => current || visibleClasses[0]?.id || "");
     setSubjectId((current) => current || visibleSubjects[0]?.id || "");
   }
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData().catch((err) => setError(err.message)); }, []);
 
   const visibleStudents = useMemo(() => students.filter((student) => student.class?.id === classId), [students, classId]);
-  const selectedBatch = batches.find((batch) => batch.classId === classId);
+  const selectedBatch = batches.find((batch) => batch.classId === classId && batch.termId === termId);
 
   function findScore(studentId: string) {
-    return scores.find((score) => score.studentId === studentId && score.subjectId === subjectId);
+    return scores.find((score) => score.studentId === studentId && score.subjectId === subjectId && score.termId === termId);
   }
 
   async function saveScore(event: FormEvent<HTMLFormElement>, studentId: string) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const componentScores = Object.fromEntries((components.length ? components : [{ id: "ca", name: "CA", maxScore: 40 }, { id: "exam", name: "Exam", maxScore: 60 }]).map((item) => [item.id, Number(form.get(item.id) ?? 0)]));
     await apiPost("/scores", {
       studentId,
       subjectId,
-      caScore: Number(form.get("caScore") ?? 0),
-      examScore: Number(form.get("examScore") ?? 0)
+      termId,
+      componentScores,
+      teacherRemark: String(form.get("teacherRemark") ?? ""),
+      principalRemark: String(form.get("principalRemark") ?? ""),
+      attendancePresent: form.get("attendancePresent") ? Number(form.get("attendancePresent")) : undefined,
+      attendanceTotal: form.get("attendanceTotal") ? Number(form.get("attendanceTotal")) : undefined
     });
     setMessage("Score saved.");
     await loadData();
@@ -75,6 +91,13 @@ export default function ResultsPage() {
     if (!scoreId) return;
     await apiPatch(`/scores/${scoreId}/submit`, {});
     setMessage("Score submitted.");
+    await loadData();
+  }
+
+  async function savePrincipalRemark(scoreId: string, form: HTMLFormElement) {
+    const remark = String(new FormData(form).get("principalRemark") ?? "");
+    await apiPatch(`/scores/${scoreId}/principal-remark`, { remark });
+    setMessage("Principal remark saved.");
     await loadData();
   }
 
@@ -99,7 +122,7 @@ export default function ResultsPage() {
 
   async function createBatch() {
     if (!classId) return;
-    const batch = await apiPost<ResultBatch, { classId: string }>("/results", { classId });
+    const batch = await apiPost<ResultBatch, { classId: string; termId: string }>("/results", { classId, termId });
     setMessage("Result batch created.");
     setBatches((current) => [batch, ...current.filter((item) => item.id !== batch.id)]);
     setClassId(batch.classId);
@@ -109,11 +132,15 @@ export default function ResultsPage() {
   return (
     <AppShell>
       {message && <p className="mb-4 rounded-xl bg-brand-soft p-3 text-sm font-medium text-brand-dark">{message}</p>}
+      {error && <p className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
         <Card>
           <CardHeader className="gap-4 md:flex md:flex-row md:items-center md:justify-between">
-            <div><CardTitle>Score entry</CardTitle><p className="mt-1 text-sm text-slate-500">Mobile-friendly CA and exam entry per student.</p></div>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div><CardTitle>Score entry</CardTitle></div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setTermId(event.target.value)} value={termId} aria-label="Term">
+                {terms.map((term) => <option value={term.id} key={term.id}>{term.academicSession?.name} {term.name}</option>)}
+              </select>
               <select className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm" onChange={(event) => setClassId(event.target.value)} value={classId}>
                 {classes.map((klass) => <option value={klass.id} key={klass.id}>{klass.name}</option>)}
               </select>
@@ -128,11 +155,14 @@ export default function ResultsPage() {
             {visibleStudents.map((student) => {
               const score = findScore(student.id);
               return (
-                <form className="grid gap-3 rounded-md border border-slate-200 p-3 sm:grid-cols-[1fr_90px_90px_auto]" key={student.id} onSubmit={(event) => saveScore(event, student.id)}>
+                <form className="grid gap-3 rounded-md border border-slate-200 p-3 sm:grid-cols-[1fr_repeat(2,90px)_auto]" key={`${student.id}-${subjectId}-${termId}`} onSubmit={(event) => saveScore(event, student.id).catch((err) => setError(err.message))}>
                   <div><p className="font-medium">{student.firstName} {student.lastName}</p><p className="text-xs text-slate-500">{student.admissionNumber}</p><Badge className={score?.status === "submitted" ? undefined : "bg-amber-50 text-amber-700"}>{score?.status ?? "missing"}</Badge></div>
-                  <div className="grid gap-1"><Label>CA</Label><Input name="caScore" type="number" defaultValue={score?.caScore ?? 0} /></div>
-                  <div className="grid gap-1"><Label>Exam</Label><Input name="examScore" type="number" defaultValue={score?.examScore ?? 0} /></div>
-                  <div className="flex flex-wrap items-end gap-2"><Button size="sm">Save</Button><Button size="sm" type="button" variant="outline" onClick={() => submitScore(score?.id)}>Submit</Button></div>
+                  {(components.length ? components : [{ id: "ca", name: "CA", maxScore: 40 }, { id: "exam", name: "Exam", maxScore: 60 }]).map((item) => <div className="grid gap-1" key={item.id}><Label>{item.name} / {item.maxScore}</Label><Input name={item.id} type="number" min={0} max={item.maxScore} defaultValue={score?.componentScores?.[item.id] ?? (item.id === "ca" ? score?.caScore : score?.examScore) ?? 0} /></div>)}
+                  <div className="flex flex-wrap items-end gap-2"><Button size="sm" disabled={score?.status === "submitted" || selectedBatch?.status === "approved" || selectedBatch?.status === "approval_requested"}>Save</Button><Button size="sm" type="button" variant="outline" disabled={!score || score.status === "submitted"} onClick={() => submitScore(score?.id).catch((err) => setError(err.message))}>Submit</Button></div>
+                  <div className="grid gap-1"><Label>Teacher remark</Label><Input name="teacherRemark" defaultValue={score?.teacherRemark ?? ""} /></div>
+                  <div className="grid gap-1"><Label>Principal remark</Label><Input name="principalRemark" defaultValue={score?.principalRemark ?? ""} disabled={!canApprove || selectedBatch?.status === "approved"} />{canApprove && score && score.status === "submitted" && selectedBatch?.status !== "approved" && <Button size="sm" type="button" variant="outline" onClick={(event) => savePrincipalRemark(score.id, event.currentTarget.form!).catch((err) => setError(err.message))}>Save remark</Button>}</div>
+                  <div className="grid gap-1"><Label>Days present</Label><Input name="attendancePresent" type="number" min={0} defaultValue={score?.attendancePresent ?? ""} /></div>
+                  <div className="grid gap-1"><Label>School days</Label><Input name="attendanceTotal" type="number" min={0} defaultValue={score?.attendanceTotal ?? ""} /></div>
                 </form>
               );
             })}
@@ -145,10 +175,10 @@ export default function ResultsPage() {
               <CardHeader><CardTitle>Approval workflow</CardTitle></CardHeader>
               <CardContent className="grid gap-3">
                 <Badge>{selectedBatch.status}</Badge>
-                <Button variant="outline" onClick={() => requestApproval(selectedBatch.id)}>Request approval</Button>
-                {canApprove && <div className="grid gap-2 sm:grid-cols-2"><Button onClick={() => approve(selectedBatch.id, "approved")}>Approve</Button><Button variant="outline" onClick={() => approve(selectedBatch.id, "rejected")}>Reject</Button></div>}
+                {(["draft", "rejected"].includes(selectedBatch.status)) && <Button variant="outline" onClick={() => requestApproval(selectedBatch.id).catch((err) => setError(err.message))}>Request approval</Button>}
+                {canApprove && selectedBatch.status === "approval_requested" && <div className="grid gap-2 sm:grid-cols-2"><Button onClick={() => approve(selectedBatch.id, "approved").catch((err) => setError(err.message))}>Approve</Button><Button variant="outline" onClick={() => approve(selectedBatch.id, "rejected").catch((err) => setError(err.message))}>Reject</Button></div>}
                 {!canApprove && <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-500">Only the school owner or head teacher can approve or reject results.</p>}
-                <Button onClick={() => generateBatch(selectedBatch.id)}>Generate class PDF</Button>
+                {selectedBatch.status === "approved" && <Button onClick={() => generateBatch(selectedBatch.id).catch((err) => setError(err.message))}>Generate class PDF</Button>}
                 {selectedBatch.generatedResults?.map((result, index) => result.pdfUrl && <a className="text-sm font-semibold text-brand" href={`${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001"}${result.pdfUrl}`} key={index}>Download generated PDF</a>)}
               </CardContent>
             </Card>
