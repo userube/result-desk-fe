@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getAuthUser, hasAnyRole, apiGet, apiPatch, apiPost } from "@/lib/api";
+import { getAuthUser, hasAnyRole, apiGet, apiGetBlob, apiPatch, apiPost } from "@/lib/api";
 
 type Klass = { id: string; name: string };
 type Subject = { id: string; name: string };
@@ -120,6 +120,16 @@ export default function ResultsPage() {
     await loadData();
   }
 
+  async function downloadPdf(url: string) {
+    const blob = await apiGetBlob(url);
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = "result-report.pdf";
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  }
+
   async function createBatch() {
     if (!classId) return;
     const batch = await apiPost<ResultBatch, { classId: string; termId: string }>("/results", { classId, termId });
@@ -179,7 +189,7 @@ export default function ResultsPage() {
                 {canApprove && selectedBatch.status === "approval_requested" && <div className="grid gap-2 sm:grid-cols-2"><Button onClick={() => approve(selectedBatch.id, "approved").catch((err) => setError(err.message))}>Approve</Button><Button variant="outline" onClick={() => approve(selectedBatch.id, "rejected").catch((err) => setError(err.message))}>Reject</Button></div>}
                 {!canApprove && <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-500">Only the school owner or head teacher can approve or reject results.</p>}
                 {selectedBatch.status === "approved" && <Button onClick={() => generateBatch(selectedBatch.id).catch((err) => setError(err.message))}>Generate class PDF</Button>}
-                {selectedBatch.generatedResults?.map((result, index) => result.pdfUrl && <a className="text-sm font-semibold text-brand" href={`${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001"}${result.pdfUrl}`} key={index}>Download generated PDF</a>)}
+                {selectedBatch.generatedResults?.map((result, index) => result.pdfUrl && <Button type="button" variant="outline" key={index} onClick={() => downloadPdf(result.pdfUrl!).catch((err) => setError(err.message))}>Download PDF</Button>)}
               </CardContent>
             </Card>
           )}
@@ -188,14 +198,13 @@ export default function ResultsPage() {
               <CardHeader><CardTitle>Start approval workflow</CardTitle></CardHeader>
               <CardContent className="grid gap-3">
                 <p className="text-sm text-slate-500">Create a result batch for the selected class before requesting approval or generating PDFs.</p>
-                <Button onClick={createBatch}>Create result batch</Button>
+                <Button disabled={!classId || !termId || !subjects.length || !visibleStudents.length} onClick={() => createBatch().catch((err) => setError(err.message))}>Create result batch</Button>
               </CardContent>
             </Card>
           )}
           <Card>
           <CardHeader><CardTitle>Result batches</CardTitle></CardHeader>
           <CardContent className="grid gap-3">
-              {selectedBatch && <Button variant="outline" onClick={createBatch}>Create batch for selected class</Button>}
               {!batches.length && <p className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">No result batches yet. Create one after entering scores for a class.</p>}
               {batches.map((batch) => (
                 <button className="rounded-xl border border-slate-200 p-3 text-left text-sm hover:bg-brand-soft" key={batch.id} onClick={() => setClassId(batch.classId)}>

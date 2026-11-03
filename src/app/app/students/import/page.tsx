@@ -12,7 +12,6 @@ import { Download, Upload } from "lucide-react";
 
 type Klass = { id: string; name: string };
 type SetupState = { classes: Klass[] };
-type Student = { id: string; firstName: string; lastName: string };
 type ImportRow = {
   firstName: string;
   lastName: string;
@@ -32,8 +31,6 @@ const sampleRows = [
   ["Daniel", "Okafor", "ADM-002", "Male", "Primary 1", "Mr Okafor", "08030000002", "parent2@yourschool.com", "2017-11-03"]
 ];
 
-const sampleCsv = sampleRows.map((row) => row.join(",")).join("\n");
-
 export default function ImportStudentsPage() {
   const [classes, setClasses] = useState<Klass[]>([]);
   const [rows, setRows] = useState<ImportRow[]>([]);
@@ -46,6 +43,7 @@ export default function ImportStudentsPage() {
   }, []);
 
   const validRows = useMemo(() => rows.filter((row) => row.errors.length === 0), [rows]);
+  const sampleCsv = sampleRows.map((row, index) => row.map((value, column) => csvCell(index && column === 4 ? classes[0]?.name ?? value : value)).join(",")).join("\n");
   const sampleHref = `data:text/csv;charset=utf-8,${encodeURIComponent(sampleCsv)}`;
 
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
@@ -54,23 +52,21 @@ export default function ImportStudentsPage() {
     const file = event.target.files?.[0];
     if (!file) return;
     const text = await file.text();
-    setRows(parseCsv(text, classes));
+    try { setRows(parseCsv(text, classes)); } catch (err) { setRows([]); setError(err instanceof Error ? err.message : "Invalid CSV file"); }
   }
 
   async function saveRows() {
     setError("");
     setMessage("");
-    if (!validRows.length) {
-      setError("Upload a valid file before saving.");
+    if (!validRows.length || validRows.length !== rows.length) {
+      setError("Resolve all preview errors before saving.");
       return;
     }
     setIsSaving(true);
     try {
-      let saved = 0;
-      for (const row of validRows) {
-        const klass = classes.find((item) => item.name.toLowerCase() === row.className.toLowerCase());
-        if (!klass) continue;
-        await apiPost<Student, Record<string, string>>("/students", compactPayload({
+      const payload = validRows.map((row) => {
+        const klass = classes.find((item) => item.name.toLowerCase() === row.className.toLowerCase())!;
+        return compactPayload({
           firstName: row.firstName,
           lastName: row.lastName,
           admissionNumber: row.admissionNumber,
@@ -80,11 +76,11 @@ export default function ImportStudentsPage() {
           parentPhone: row.parentPhone,
           parentEmail: row.parentEmail,
           dateOfBirth: row.dateOfBirth
-        }));
-        saved += 1;
-      }
+        });
+      });
+      const result = await apiPost<{ imported: number }, { rows: Record<string, string>[] }>("/students/import", { rows: payload });
       setRows([]);
-      setMessage(`${saved} student records saved.`);
+      setMessage(`${result.imported} student records saved.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save imported students.");
     } finally {
@@ -98,7 +94,7 @@ export default function ImportStudentsPage() {
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-brand">Student import</p>
           <h2 className="mt-2 text-2xl font-bold md:text-3xl">Preview student records before saving.</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Download the sample CSV, fill your student data, upload it here, review the mock table, then save the valid rows.</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Download the sample CSV, fill your student data, upload it here, review the records, then save them.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" className="bg-white"><Link href="/app/students">Back to students</Link></Button>
@@ -136,7 +132,7 @@ export default function ImportStudentsPage() {
         <Card className="border-slate-200 bg-white shadow-sm">
           <CardHeader className="gap-3 md:flex md:flex-row md:items-center md:justify-between">
             <div><CardTitle>Upload preview</CardTitle><p className="mt-1 text-sm text-slate-500">{validRows.length} valid of {rows.length} uploaded rows</p></div>
-            <Button disabled={!validRows.length || isSaving} onClick={saveRows}>{isSaving ? "Saving..." : "Save valid rows"}</Button>
+            <Button disabled={!validRows.length || validRows.length !== rows.length || isSaving} onClick={saveRows}>{isSaving ? "Saving..." : "Save records"}</Button>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto rounded-xl border border-slate-200">
@@ -166,25 +162,55 @@ export default function ImportStudentsPage() {
 }
 
 function parseCsv(text: string, classes: Klass[]): ImportRow[] {
-  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  const [header, ...body] = lines;
-  const hasHeader = header?.toLowerCase().includes("firstname");
-  const rows = hasHeader ? body : lines;
-  return rows.map((line) => {
-    const [firstName = "", lastName = "", admissionNumber = "", gender = "", className = "", parentName = "", parentPhone = "", parentEmail = "", dateOfBirth = ""] = splitCsvLine(line);
+  const records = parseCsvRecords(text).filter((record) => record.some((cell) => cell.trim()));
+  const expected = sampleRows[0];
+  if (!records.length || expected.some((column, index) => records[0][index]?.trim() !== column)) throw new Error(`CSV columns must match the downloaded sample: ${expected.join(", ")}`);
+  const body = records.slice(1);
+  if (body.length > 500) throw new Error("Import up to 500 students at a time");
+  const seen = new Set<string>();
+  return body.map((record) => {
+    const [firstName = "", lastName = "", admissionNumber = "", gender = "", className = "", parentName = "", parentPhone = "", parentEmail = "", dateOfBirth = ""] = record.map((cell) => cell.trim());
     const errors: string[] = [];
+    if (record.length !== expected.length) errors.push("wrong number of columns");
     if (!firstName) errors.push("first name missing");
     if (!lastName) errors.push("last name missing");
     if (!admissionNumber) errors.push("admission missing");
+    const admissionKey = admissionNumber.toLowerCase();
+    if (seen.has(admissionKey)) errors.push("duplicate admission");
+    seen.add(admissionKey);
     if (!gender) errors.push("gender missing");
     if (!classes.some((klass) => klass.name.toLowerCase() === className.toLowerCase())) errors.push("class not found");
     if (parentEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(parentEmail)) errors.push("guardian email invalid");
+    if (dateOfBirth && Number.isNaN(new Date(dateOfBirth).getTime())) errors.push("date invalid");
     return { firstName, lastName, admissionNumber, gender, className, parentName, parentPhone, parentEmail, dateOfBirth, errors };
   });
 }
 
-function splitCsvLine(line: string) {
-  return line.split(",").map((value) => value.trim().replace(/^"|"$/g, ""));
+function csvCell(value: string) {
+  return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+}
+
+function parseCsvRecords(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let quoted = false;
+  for (let index = 0; index < text.length; index++) {
+    const char = text[index];
+    if (char === '"') {
+      if (quoted && text[index + 1] === '"') { cell += '"'; index++; }
+      else if (quoted) quoted = false;
+      else if (!cell) quoted = true;
+      else throw new Error("Invalid quote in CSV file");
+    } else if (char === "," && !quoted) { row.push(cell); cell = ""; }
+    else if ((char === "\n" || char === "\r") && !quoted) {
+      if (char === "\r" && text[index + 1] === "\n") index++;
+      row.push(cell); rows.push(row); row = []; cell = "";
+    } else cell += char;
+  }
+  if (quoted) throw new Error("Unclosed quoted value in CSV file");
+  if (row.length || cell) { row.push(cell); rows.push(row); }
+  return rows;
 }
 
 function compactPayload(values: Record<string, string>) {

@@ -64,7 +64,7 @@ export default function ResultTemplatePage() {
         </Card>
 
         <Card className="border-slate-200 bg-white shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between"><CardTitle>PDF preview</CardTitle><Badge>Live template</Badge></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between"><CardTitle>PDF example</CardTitle><Badge>Sample data</Badge></CardHeader>
           <CardContent>
             <div className="rounded-2xl border border-slate-200 bg-[#fbfcfa] p-5">
               <div className="flex items-center justify-between border-b border-slate-200 pb-4">

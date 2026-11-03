@@ -42,16 +42,18 @@ export default function TeachersPage() {
     event.preventDefault();
     setError("");
     const form = new FormData(event.currentTarget);
-    await apiPost("/teachers", {
-      email: String(form.get("email") ?? ""),
-      firstName: String(form.get("firstName") ?? ""),
-      lastName: String(form.get("lastName") ?? ""),
-      role: String(form.get("role") ?? "CLASS_TEACHER"),
-      password: String(form.get("password") ?? "") || undefined
-    });
-    setMessage("Teacher created.");
-    event.currentTarget.reset();
-    await loadData();
+    try {
+      await apiPost("/teachers", {
+        email: String(form.get("email") ?? ""),
+        firstName: String(form.get("firstName") ?? ""),
+        lastName: String(form.get("lastName") ?? ""),
+        role: String(form.get("role") ?? "CLASS_TEACHER"),
+        password: String(form.get("password") ?? "")
+      });
+      setMessage("Teacher created.");
+      event.currentTarget.reset();
+      await loadData();
+    } catch (err) { setError(err instanceof Error ? err.message : "Could not create teacher"); }
   }
 
   async function inviteTeacher(event: FormEvent<HTMLFormElement>) {
@@ -62,7 +64,7 @@ export default function TeachersPage() {
       role: String(form.get("role") ?? "CLASS_TEACHER")
     });
     setInviteLink(invite.inviteLink);
-    setMessage("Invitation sent.");
+    setMessage("Invitation created. Share the link with the teacher.");
     event.currentTarget.reset();
   }
 
@@ -118,7 +120,7 @@ export default function TeachersPage() {
                 <div className="grid gap-2"><Label>Last name</Label><Input name="lastName" required /></div>
                 <div className="grid gap-2"><Label>Email</Label><Input name="email" type="email" required /></div>
                 <RoleSelect />
-                <div className="grid gap-2"><Label>Temporary password</Label><Input name="password" minLength={8} type="password" placeholder="Optional if using invite" /></div>
+                <div className="grid gap-2"><Label>Temporary password</Label><Input name="password" minLength={8} type="password" required /></div>
                 <Button>Create teacher</Button>
               </form>
             </CardContent>

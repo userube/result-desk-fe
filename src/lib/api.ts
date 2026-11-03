@@ -48,6 +48,14 @@ export async function apiGet<TResponse>(path: string): Promise<TResponse> {
   return apiRequest<TResponse>(path);
 }
 
+export async function apiGetBlob(path: string): Promise<Blob> {
+  const download = (token: string) => fetch(`${API_BASE_URL}${path}`, { headers: { Authorization: `Bearer ${token}` } });
+  let response = await download(getAccessToken());
+  if (response.status === 401 && getRefreshToken()) response = await download(await refreshAuthToken());
+  if (!response.ok) throw new Error("PDF download failed. Generate the report again if it was created before this update.");
+  return response.blob();
+}
+
 export async function apiPut<TResponse, TPayload>(
   path: string,
   payload: TPayload,
