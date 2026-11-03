@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiGet, getAuthUser, hasAnyRole } from "@/lib/api";
-import { ArrowUpRight, CheckCircle2, ClipboardList, FileText, GraduationCap, Search, UserPlus, Users } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, ClipboardList, FileText, GraduationCap, UserPlus, Users } from "lucide-react";
 
 type DashboardData = { students: number; teachers: number; classes: number; pendingScores: number; weeklyReports: number };
 type Program = { id: string; name: string; type: string; status: string; classes?: Array<{ name: string }> };
@@ -37,13 +37,13 @@ export default function DashboardPage() {
   const [teacherMe, setTeacherMe] = useState<TeacherMe | null>(null);
   const [error, setError] = useState("");
   const roles = getAuthUser()?.roles ?? [];
-  const isOwnerWorkspace = hasAnyRole(roles, ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"]);
+  const isOwnerWorkspace = hasAnyRole(roles, ["SCHOOL_OWNER", "SCHOOL_ADMIN"]);
 
   useEffect(() => {
     Promise.all([
       apiGet<DashboardData>("/dashboard"),
       apiGet<Program[]>("/programs"),
-      apiGet<AuditLog[]>("/audit-logs"),
+      isOwnerWorkspace ? apiGet<AuditLog[]>("/audit-logs") : Promise.resolve([]),
       apiGet<Score[]>("/scores"),
       apiGet<SetupState>("/schools/setup-state")
     ])
@@ -56,7 +56,7 @@ export default function DashboardPage() {
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Unable to load dashboard data."));
     apiGet<TeacherMe>("/teachers/me").then(setTeacherMe).catch(() => undefined);
-  }, []);
+  }, [isOwnerWorkspace]);
 
   const metrics = useMemo(() => [
     { label: "Total students", value: dashboard?.students ?? 0, helper: "Across all active classes", tone: "bg-[#effaf7] text-brand", icon: GraduationCap },
@@ -77,19 +77,26 @@ export default function DashboardPage() {
     <AppShell>
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-brand">{setup?.school.slug ? `${setup.school.slug}.ewune.app` : "School workspace"}</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-brand">{setup?.school.name ?? "School workspace"}</p>
           <h2 className="mt-2 text-2xl font-bold md:text-3xl">{isOwnerWorkspace ? `${setup?.school.name ?? "School"} owner dashboard` : "Teacher workspace"}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{isOwnerWorkspace ? "Live owner view for setup, submissions, students, approvals, and audit activity." : "Your assigned classes, subjects, weekly reports, and score entry shortcuts."}</p>
         </div>
-        {isOwnerWorkspace && <div className="flex gap-2">
-          <Button variant="outline" className="bg-white"><Search size={16} /> Search</Button>
-          <Button><FileText size={16} /> Generate PDFs</Button>
-        </div>}
+        {isOwnerWorkspace && <Button asChild><Link href="/app/results"><FileText size={16} /> Open ResultDesk</Link></Button>}
       </div>
 
       {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p>}
 
-      {teacherMe && !teacherMe.roles.some((item) => ["SCHOOL_OWNER", "SCHOOL_ADMIN"].includes(item.role)) && (
+      {!isOwnerWorkspace && <section className="mt-6">
+        <h3 className="text-base font-semibold">Today's work</h3>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button asChild variant="outline"><Link href="/app/attendance">Mark attendance</Link></Button>
+          <Button asChild variant="outline"><Link href="/app/weekly-reports">Weekly report</Link></Button>
+          <Button asChild variant="outline"><Link href="/app/results">Enter scores</Link></Button>
+          <Button asChild variant="outline"><Link href="/app/chat">Teacher chat</Link></Button>
+        </div>
+      </section>}
+
+      {teacherMe && !isOwnerWorkspace && (
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <Card className="border-slate-200 bg-white shadow-sm">
             <CardHeader><CardTitle>My classes</CardTitle></CardHeader>
@@ -108,7 +115,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {isOwnerWorkspace && <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map(({ label, value, helper, tone, icon: Icon }) => (
           <Card className="overflow-hidden border-slate-200 bg-white shadow-sm" key={label}>
             <CardContent className="p-5">
@@ -120,13 +127,13 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         ))}
-      </div>
+      </div>}
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.7fr]">
+      {isOwnerWorkspace && <div className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.7fr]">
         <Card className="border-slate-200 bg-white shadow-sm">
           <CardHeader className="flex flex-row items-start justify-between gap-4">
             <div><CardTitle>Student result queue</CardTitle><p className="mt-1 text-sm text-slate-500">Pulled from student records in Postgres.</p></div>
-            <Button variant="outline" size="sm" className="bg-white">Filter</Button>
+            <Button asChild variant="outline" size="sm" className="bg-white"><Link href="/app/results">View all</Link></Button>
           </CardHeader>
           <CardContent>
             <div className="overflow-hidden rounded-xl border border-slate-200">
@@ -158,9 +165,9 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div>}
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_0.9fr]">
+      {isOwnerWorkspace && <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_0.9fr]">
         <Card className="border-slate-200 bg-white shadow-sm">
           <CardHeader><CardTitle>Programs</CardTitle></CardHeader>
           <CardContent className="grid gap-3">
@@ -183,15 +190,15 @@ export default function DashboardPage() {
             ))}
           </CardContent>
         </Card>
-      </div>
+      </div>}
 
-      <Card className="mt-6 border-slate-200 bg-white shadow-sm">
+      {isOwnerWorkspace && <Card className="mt-6 border-slate-200 bg-white shadow-sm">
         <CardHeader><CardTitle>Recent activity</CardTitle></CardHeader>
         <CardContent className="grid gap-3">
           {!activity.length && <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">No audit activity yet.</p>}
           {activity.slice(0, 6).map((item) => <p className="rounded-xl bg-slate-50 p-4 text-sm" key={item.id}>{item.action} · {item.entityType}</p>)}
         </CardContent>
-      </Card>
+      </Card>}
     </AppShell>
   );
 }

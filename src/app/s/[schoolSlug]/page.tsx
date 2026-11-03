@@ -29,11 +29,11 @@ export default async function SchoolPortalPage({ params }: { params: Promise<{ s
   return (
     <main className="min-h-screen bg-brand-soft px-4 py-10 text-brand-text">
       <section className="mx-auto max-w-3xl rounded-lg bg-white p-6 shadow-soft">
-        <p className="text-sm font-semibold text-brand">{school.slug}.ewune.app</p>
+        <p className="text-sm font-semibold text-brand">School portal</p>
         <h1 className="mt-2 text-4xl font-bold">{school.name}</h1>
         <p className="mt-4 text-slate-600">{school.address ?? "A connected school portal for admissions and parent updates."}</p>
         <p className="mt-4 text-sm">{school.email}{school.phone ? ` · ${school.phone}` : ""}</p>
-        <Button asChild className="mt-6"><Link href={`/s/${school.slug}/admission`}>Admission inquiry</Link></Button>
+        <div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link href={`/s/${school.slug}/admission`}>Admission inquiry</Link></Button><Button asChild variant="outline"><Link href={`/s/${school.slug}/results`}>Parent results</Link></Button></div>
       </section>
     </main>
   );

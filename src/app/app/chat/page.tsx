@@ -18,6 +18,7 @@ type ChatRoom = {
   name: string;
   purpose?: string | null;
   messages?: ChatMessage[];
+  unreadCount?: number;
 };
 
 export default function TeacherChatPage() {
@@ -44,6 +45,14 @@ export default function TeacherChatPage() {
 
   useEffect(() => {
     loadMessages(selectedRoomId).catch((err) => setError(err instanceof Error ? err.message : "Unable to load messages."));
+  }, [selectedRoomId]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      loadRooms().catch(() => undefined);
+      if (selectedRoomId) loadMessages(selectedRoomId).catch(() => undefined);
+    }, 15000);
+    return () => window.clearInterval(timer);
   }, [selectedRoomId]);
 
   const selectedRoom = useMemo(() => rooms.find((room) => room.id === selectedRoomId), [rooms, selectedRoomId]);
@@ -128,7 +137,7 @@ export default function TeacherChatPage() {
                   <button className={`rounded-xl border p-4 text-left transition ${selectedRoomId === room.id ? "border-brand bg-brand-soft" : "border-slate-200 bg-white hover:bg-slate-50"}`} key={room.id} onClick={() => setSelectedRoomId(room.id)} type="button">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-semibold">{room.name}</p>
-                      <Badge>{latest ? "active" : "new"}</Badge>
+                      <Badge>{room.unreadCount ? `${room.unreadCount} new` : latest ? "active" : "new"}</Badge>
                     </div>
                     <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{latest?.body ?? room.purpose ?? "No messages yet"}</p>
                   </button>

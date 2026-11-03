@@ -17,6 +17,7 @@ type ResultBatch = { id: string; classId: string; termId: string; status: string
 type Term = { id: string; name: string; isCurrent: boolean; academicSession?: { name: string } };
 type Component = { id: string; name: string; maxScore: number };
 type TeacherMe = { roles: Array<{ role: string }>; classes: Array<{ class: Klass }>; subjects: Array<{ subject: Subject }> };
+type Review = { summary: { students: number; subjects: number; submitted: number; incomplete: number }; rows: Array<{ studentId: string; student: string; admissionNumber: string; subject: string; total: number | null; status: string; grade: string | null; teacherRemark: string | null; principalRemark: string | null }> };
 
 export default function ResultsPage() {
   const [classes, setClasses] = useState<Klass[]>([]);
@@ -31,6 +32,7 @@ export default function ResultsPage() {
   const [classId, setClassId] = useState("");
   const [subjectId, setSubjectId] = useState("");
   const [message, setMessage] = useState("");
+  const [review, setReview] = useState<Review | null>(null);
   const roles = getAuthUser()?.roles ?? [];
   const canApprove = hasAnyRole(roles, ["SCHOOL_OWNER", "HEAD_TEACHER"]);
 
@@ -64,6 +66,11 @@ export default function ResultsPage() {
 
   const visibleStudents = useMemo(() => students.filter((student) => student.class?.id === classId), [students, classId]);
   const selectedBatch = batches.find((batch) => batch.classId === classId && batch.termId === termId);
+
+  useEffect(() => {
+    if (!selectedBatch) { setReview(null); return; }
+    apiGet<Review>(`/results/${selectedBatch.id}/review`).then(setReview).catch((err) => setError(err.message));
+  }, [selectedBatch?.id, scores, batches]);
 
   function findScore(studentId: string) {
     return scores.find((score) => score.studentId === studentId && score.subjectId === subjectId && score.termId === termId);
@@ -118,6 +125,13 @@ export default function ResultsPage() {
     const result = await apiPost<{ pdfUrl?: string }, Record<string, never>>(`/pdf/results/${batchId}/class-batch`, {});
     setMessage(`Generated ${result.pdfUrl ?? "class batch PDF"}`);
     await loadData();
+  }
+
+  async function generateStudent(batchId: string, studentId: string) {
+    const result = await apiPost<{ pdfUrl: string }, Record<string, never>>(`/pdf/results/${batchId}/students/${studentId}`, {});
+    setMessage("Student report generated for parent access.");
+    await loadData();
+    await downloadPdf(result.pdfUrl);
   }
 
   async function downloadPdf(url: string) {
@@ -217,6 +231,22 @@ export default function ResultsPage() {
           </Card>
         </div>
       </div>
+      {review && <section className="mt-8">
+        <h2 className="text-lg font-semibold">Result review</h2>
+        <p className="mt-1 text-sm text-slate-600">{review.summary.students} students · {review.summary.subjects} subjects · {review.summary.submitted} submitted · {review.summary.incomplete} incomplete</p>
+        <div className="mt-4 overflow-x-auto border-y border-slate-200">
+          <table className="w-full min-w-[680px] text-left text-sm">
+            <thead className="bg-slate-50 text-slate-600"><tr><th className="p-3">Student</th><th className="p-3">Subject</th><th className="p-3">Total</th><th className="p-3">Grade</th><th className="p-3">Status</th><th className="p-3">Remarks</th></tr></thead>
+            <tbody>{review.rows.map((row) => <tr className="border-t border-slate-100" key={`${row.studentId}-${row.subject}`}><td className="p-3">{row.student}<span className="block text-xs text-slate-500">{row.admissionNumber}</span></td><td className="p-3">{row.subject}</td><td className="p-3">{row.total ?? "—"}</td><td className="p-3">{row.grade ?? "—"}</td><td className="p-3">{row.status}</td><td className="p-3">{row.teacherRemark || row.principalRemark || "—"}</td></tr>)}</tbody>
+          </table>
+        </div>
+        {selectedBatch?.status === "approved" && <div className="mt-6">
+          <h3 className="font-semibold">Individual report cards</h3>
+          <div className="mt-3 divide-y border-y border-slate-200">
+            {[...new Map(review.rows.map((row) => [row.studentId, row.student])).entries()].map(([studentId, name]) => <div className="flex items-center justify-between gap-3 py-3 text-sm" key={studentId}><span>{name}</span><Button size="sm" variant="outline" onClick={() => generateStudent(selectedBatch.id, studentId).catch((err) => setError(err.message))}>Generate PDF</Button></div>)}
+          </div>
+        </div>}
+      </section>}
     </AppShell>
   );
 }

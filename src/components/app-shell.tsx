@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BarChart3, BookOpenCheck, ClipboardList, Globe2, Home, Layers3, LogOut, MessageSquareText, Settings, ShieldCheck, UserPlus, Users, type LucideIcon } from "lucide-react";
+import { BarChart3, BookOpenCheck, CalendarDays, ClipboardList, Globe2, Home, Layers3, LogOut, MessageSquareText, Settings, ShieldCheck, UserPlus, Users, type LucideIcon } from "lucide-react";
 import { apiGet, clearAuthTokens, getAuthUser, hasAnyRole, hasAuthTokens } from "@/lib/api";
 
 const items: Array<{ label: string; href: `/app/${string}`; Icon: LucideIcon; roles?: string[] }> = [
@@ -11,6 +11,8 @@ const items: Array<{ label: string; href: `/app/${string}`; Icon: LucideIcon; ro
   { label: "Programs", href: "/app/programs", Icon: Layers3, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"] },
   { label: "Classes", href: "/app/classes", Icon: BookOpenCheck, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"] },
   { label: "Students", href: "/app/students", Icon: Users, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN", "HEAD_TEACHER"] },
+  { label: "Academic Year", href: "/app/academic", Icon: CalendarDays, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN"] },
+  { label: "Attendance", href: "/app/attendance", Icon: ClipboardList },
   { label: "Teachers", href: "/app/teachers", Icon: Users, roles: ["SCHOOL_OWNER", "SCHOOL_ADMIN"] },
   { label: "Teacher Chat", href: "/app/chat", Icon: MessageSquareText },
   { label: "Weekly Reports", href: "/app/weekly-reports", Icon: ClipboardList },
@@ -21,14 +23,14 @@ const items: Array<{ label: string; href: `/app/${string}`; Icon: LucideIcon; ro
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [setup, setSetup] = useState<{ school: { name: string; slug: string; logoUrl?: string }; checklist?: Record<string, boolean> } | null>(null);
+  const [setup, setSetup] = useState<{ school: { name: string; slug: string; logoUrl?: string }; currentSession?: { name: string } | null; currentTerm?: { name: string } | null; checklist?: Record<string, boolean> } | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
 
   useEffect(() => {
     if (!hasAuthTokens()) router.replace("/login");
     else {
       setRoles(getAuthUser()?.roles ?? []);
-      apiGet<{ school: { name: string; slug: string; logoUrl?: string }; checklist?: Record<string, boolean> }>("/schools/setup-state").then(setSetup).catch(() => undefined);
+      apiGet<{ school: { name: string; slug: string; logoUrl?: string }; currentSession?: { name: string } | null; currentTerm?: { name: string } | null; checklist?: Record<string, boolean> }>("/schools/setup-state").then(setSetup).catch(() => undefined);
     }
   }, [router]);
 
@@ -79,10 +81,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-brand">{school?.name ?? "School workspace"}</p>
               <h1 className="text-xl font-bold">School workspace</h1>
-              <p className="mt-1 hidden text-sm text-slate-500 sm:block">First Term, Holiday Coaching, and ResultDesk approvals in one place.</p>
+              <p className="mt-1 hidden text-sm text-slate-500 sm:block">{[setup?.currentSession?.name, setup?.currentTerm?.name].filter(Boolean).join(" · ") || "School workspace"}</p>
             </div>
             <div className="hidden items-center gap-3 sm:flex">
-              <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand">{school?.slug ? `${school.slug}.ewune.app` : "portal pending"}</span>
+              <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand">{school?.slug ? `/s/${school.slug}` : "Portal pending"}</span>
               <span className="grid size-10 place-items-center rounded-xl bg-[#effaf7] text-brand"><BarChart3 size={20} /></span>
               <button className="grid size-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" onClick={logout} type="button" aria-label="Log out">
                 <LogOut size={18} />
