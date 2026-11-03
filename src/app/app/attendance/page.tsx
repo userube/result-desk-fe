@@ -14,7 +14,10 @@ export default function AttendancePage() {
   const [classes, setClasses] = useState<Klass[]>([]);
   const [term, setTerm] = useState<Term | null>(null);
   const [classId, setClassId] = useState("");
-  const [date, setDate] = useState(() => new Date().toLocaleDateString("en-CA"));
+  const [date, setDate] = useState(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  });
   const [students, setStudents] = useState<Student[]>([]);
   const [marked, setMarked] = useState(false);
   const [error, setError] = useState("");

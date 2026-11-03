@@ -94,9 +94,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="p-4 md:p-8">{children}</main>
       </div>
-      <nav className="fixed bottom-0 left-0 right-0 grid grid-cols-5 border-t border-slate-200 bg-white md:hidden">
-        {visibleItems.slice(0, 5).map(({ label, href, Icon }) => (
-          <Link className="flex flex-col items-center gap-1 px-1 py-2 text-[11px]" href={href} key={href}>
+      <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 right-0 flex overflow-x-auto border-t border-slate-200 bg-white md:hidden">
+        {visibleItems.map(({ label, href, Icon }) => (
+          <Link className="flex min-w-24 flex-col items-center gap-1 px-2 py-2 text-center text-[11px]" href={href} key={href}>
             <Icon size={18} /> {label}
           </Link>
         ))}

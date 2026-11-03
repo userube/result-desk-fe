@@ -17,7 +17,7 @@ type ResultBatch = { id: string; classId: string; termId: string; status: string
 type Term = { id: string; name: string; isCurrent: boolean; academicSession?: { name: string } };
 type Component = { id: string; name: string; maxScore: number };
 type TeacherMe = { roles: Array<{ role: string }>; classes: Array<{ class: Klass }>; subjects: Array<{ subject: Subject }> };
-type Review = { summary: { students: number; subjects: number; submitted: number; incomplete: number }; rows: Array<{ studentId: string; student: string; admissionNumber: string; subject: string; total: number | null; status: string; grade: string | null; teacherRemark: string | null; principalRemark: string | null }> };
+type Review = { batch: { id: string }; summary: { students: number; subjects: number; submitted: number; incomplete: number }; rows: Array<{ studentId: string; student: string; admissionNumber: string; subject: string; total: number | null; status: string; grade: string | null; teacherRemark: string | null; principalRemark: string | null }> };
 
 export default function ResultsPage() {
   const [classes, setClasses] = useState<Klass[]>([]);
@@ -64,12 +64,18 @@ export default function ResultsPage() {
 
   useEffect(() => { loadData().catch((err) => setError(err.message)); }, []);
 
-  const visibleStudents = useMemo(() => students.filter((student) => student.class?.id === classId), [students, classId]);
   const selectedBatch = batches.find((batch) => batch.classId === classId && batch.termId === termId);
+  const visibleStudents = useMemo(() => {
+    if (!selectedBatch || review?.batch.id !== selectedBatch.id) return students.filter((student) => student.class?.id === classId);
+    const roster = new Set(review.rows.map((row) => row.studentId));
+    return students.filter((student) => roster.has(student.id));
+  }, [students, classId, selectedBatch?.id, review]);
 
   useEffect(() => {
     if (!selectedBatch) { setReview(null); return; }
-    apiGet<Review>(`/results/${selectedBatch.id}/review`).then(setReview).catch((err) => setError(err.message));
+    let active = true;
+    apiGet<Review>(`/results/${selectedBatch.id}/review`).then((data) => { if (active) setReview(data); }).catch((err) => { if (active) setError(err.message); });
+    return () => { active = false; };
   }, [selectedBatch?.id, scores, batches]);
 
   function findScore(studentId: string) {
@@ -221,9 +227,9 @@ export default function ResultsPage() {
           <CardContent className="grid gap-3">
               {!batches.length && <p className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">No result batches yet. Create one after entering scores for a class.</p>}
               {batches.map((batch) => (
-                <button className="rounded-xl border border-slate-200 p-3 text-left text-sm hover:bg-brand-soft" key={batch.id} onClick={() => setClassId(batch.classId)}>
+                <button className="rounded-xl border border-slate-200 p-3 text-left text-sm hover:bg-brand-soft" key={batch.id} onClick={() => { setTermId(batch.termId); setClassId(batch.classId); }}>
                   <p className="font-semibold">{batch.class?.name ?? "Class batch"}</p>
-                  <p className="text-slate-500">{batch.program?.name ?? "Current term"} · {batch.status}</p>
+                  <p className="text-slate-500">{terms.find((term) => term.id === batch.termId)?.name ?? "Term"} · {batch.program?.name ? `${batch.program.name} · ` : ""}{batch.status}</p>
                   {batch.approvals?.[0] && <p className="mt-1 text-xs text-slate-500">Latest decision: {batch.approvals[0].status}</p>}
                 </button>
               ))}
@@ -231,7 +237,7 @@ export default function ResultsPage() {
           </Card>
         </div>
       </div>
-      {review && <section className="mt-8">
+      {review && review.batch.id === selectedBatch?.id && <section className="mt-8">
         <h2 className="text-lg font-semibold">Result review</h2>
         <p className="mt-1 text-sm text-slate-600">{review.summary.students} students · {review.summary.subjects} subjects · {review.summary.submitted} submitted · {review.summary.incomplete} incomplete</p>
         <div className="mt-4 overflow-x-auto border-y border-slate-200">
